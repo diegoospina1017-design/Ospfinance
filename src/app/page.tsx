@@ -571,7 +571,7 @@ function EntrySheet({entry,onClose,onSave,cats}:{entry?:Entry,onClose:()=>void,o
         <div className="fg">
           <label className="fl">Persona</label>
           <div className="pg">
-            {['Diego','Kelly','Compartido'].map(p=><button key={p} className={`pb${person===p?' on':''}`} onClick={()=>setPerson(p)}>{p}</button>)}
+            {(['Diego','Kelly','Compartido'] as const).map(p => (p=><button key={p} className={`pb${person===p?' on':''}`} onClick={()=>setPerson(p)}>{p}</button>)}
           </div>
           {person==='Compartido'&&<div style={{fontSize:11,color:'var(--mt)',marginTop:6,padding:'6px 10px',background:'rgba(124,92,252,.08)',borderRadius:8,border:'1px solid rgba(124,92,252,.15)'}}>⚡ Se divide 50/50 en la liquidación</div>}
         </div>
