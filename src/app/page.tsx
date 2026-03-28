@@ -5,12 +5,6 @@ import { createBrowserClient } from '@supabase/ssr'
 
 type PersonType = 'Diego' | 'Kelly' | 'Compartido'
 
-type Category = {
-  id: string
-  name: string
-  icon: string
-}
-
 type ExpenseItem = {
   id: string
   person: PersonType
@@ -20,7 +14,7 @@ type ExpenseItem = {
   created_at?: string
 }
 
-const categories: Category[] = [
+const categories = [
   { id: 'food', name: 'Comida', icon: '🍔' },
   { id: 'transport', name: 'Transporte', icon: '🚗' },
   { id: 'home', name: 'Casa', icon: '🏠' },
@@ -41,6 +35,9 @@ export default function Home() {
   const [items, setItems] = useState<ExpenseItem[]>([])
   const [loading, setLoading] = useState(true)
 
+  // ===============================
+  // LOAD DATA
+  // ===============================
   useEffect(() => {
     loadItems()
   }, [])
@@ -54,18 +51,17 @@ export default function Home() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error loading expenses:', error)
-      setLoading(false)
-      return
-    }
-
-    if (data) {
+      console.error(error)
+    } else {
       setItems(data as ExpenseItem[])
     }
 
     setLoading(false)
   }
 
+  // ===============================
+  // SAVE
+  // ===============================
   const handleSave = async () => {
     const parsedAmount = Number(amount)
 
@@ -74,18 +70,18 @@ export default function Home() {
       return
     }
 
-    const newItem = {
-      person,
-      amount: parsedAmount,
-      catId,
-      note,
-    }
-
-    const { error } = await supabase.from('expenses').insert([newItem])
+    const { error } = await supabase.from('expenses').insert([
+      {
+        person,
+        amount: parsedAmount,
+        catId,
+        note,
+      },
+    ])
 
     if (error) {
-      console.error('Error saving expense:', error)
-      alert('Error guardando en Supabase')
+      console.error(error)
+      alert('Error guardando')
       return
     }
 
@@ -97,23 +93,24 @@ export default function Home() {
     await loadItems()
   }
 
-  const getCategoryName = (id: string) => {
-    return categories.find((c) => c.id === id)?.name || 'Sin categoría'
-  }
+  // ===============================
+  // HELPERS
+  // ===============================
+  const getCategory = (id: string) =>
+    categories.find((c) => c.id === id) || categories[4]
 
-  const getCategoryIcon = (id: string) => {
-    return categories.find((c) => c.id === id)?.icon || '📦'
-  }
+  const total = items.reduce((sum, i) => sum + Number(i.amount), 0)
 
-  const total = items.reduce((sum, item) => sum + Number(item.amount), 0)
-
+  // ===============================
+  // UI
+  // ===============================
   return (
-    <div style={{ padding: 20, maxWidth: 700, margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
-      <h1>FamFinance 🚀</h1>
-      <p>Diego & Kelly App</p>
+    <div style={{ padding: 20, maxWidth: 700, margin: '0 auto' }}>
+      <h1>FamFinance 💰</h1>
 
+      {/* PERSONA */}
       <h3>Persona</h3>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 10 }}>
         {(['Diego', 'Kelly', 'Compartido'] as PersonType[]).map((p) => (
           <button
             key={p}
@@ -122,8 +119,8 @@ export default function Home() {
               padding: '8px 12px',
               background: person === p ? '#7c5cff' : '#eee',
               color: person === p ? 'white' : 'black',
-              border: 'none',
               borderRadius: 8,
+              border: 'none',
               cursor: 'pointer',
             }}
           >
@@ -132,15 +129,16 @@ export default function Home() {
         ))}
       </div>
 
+      {/* MONTO */}
       <h3 style={{ marginTop: 20 }}>Monto</h3>
       <input
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        placeholder="Ej: 50000"
-        style={{ padding: 8, width: 250 }}
+        style={{ padding: 8, width: 200 }}
       />
 
+      {/* CATEGORIA */}
       <h3 style={{ marginTop: 20 }}>Categoría</h3>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         {categories.map((c) => (
@@ -151,8 +149,8 @@ export default function Home() {
               padding: '8px 12px',
               background: catId === c.id ? '#7c5cff' : '#eee',
               color: catId === c.id ? 'white' : 'black',
-              border: 'none',
               borderRadius: 8,
+              border: 'none',
               cursor: 'pointer',
             }}
           >
@@ -161,78 +159,66 @@ export default function Home() {
         ))}
       </div>
 
+      {/* NOTA */}
       <h3 style={{ marginTop: 20 }}>Nota</h3>
       <input
-        type="text"
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Ej: mercado, gasolina..."
         style={{ padding: 8, width: 300 }}
       />
 
+      {/* SAVE */}
       <div style={{ marginTop: 20 }}>
         <button
           onClick={handleSave}
           style={{
-            padding: '10px 16px',
-            background: '#16a34a',
+            padding: 10,
+            background: 'green',
             color: 'white',
-            border: 'none',
             borderRadius: 8,
+            border: 'none',
             cursor: 'pointer',
-            fontWeight: 'bold',
           }}
         >
-          Guardar gasto
+          Guardar
         </button>
       </div>
 
+      {/* TOTAL */}
       <div style={{ marginTop: 30 }}>
-        <strong>Total acumulado:</strong> ${total.toLocaleString()}
+        <strong>Total: ${total.toLocaleString()}</strong>
       </div>
 
-      <div style={{ marginTop: 30 }}>
+      {/* LIST */}
+      <div style={{ marginTop: 20 }}>
         <h3>Movimientos</h3>
 
         {loading ? (
           <p>Cargando...</p>
         ) : items.length === 0 ? (
-          <p>No hay movimientos todavía.</p>
+          <p>No hay datos</p>
         ) : (
-          <div style={{ display: 'grid', gap: 12 }}>
-            {items.map((item) => (
+          items.map((i) => {
+            const cat = getCategory(i.catId)
+            return (
               <div
-                key={item.id}
+                key={i.id}
                 style={{
-                  padding: 14,
+                  marginBottom: 10,
+                  padding: 10,
                   border: '1px solid #333',
-                  borderRadius: 10,
-                  background: '#111',
-                  color: 'white',
+                  borderRadius: 8,
                 }}
               >
+                <p>{i.person}</p>
+                <p>${Number(i.amount).toLocaleString()}</p>
                 <p>
-                  <strong>Persona:</strong> {item.person}
+                  {cat.icon} {cat.name}
                 </p>
-                <p>
-                  <strong>Monto:</strong> ${Number(item.amount).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Categoría:</strong> {getCategoryIcon(item.catId)}{' '}
-                  {getCategoryName(item.catId)}
-                </p>
-                <p>
-                  <strong>Nota:</strong> {item.note || '-'}
-                </p>
-                {item.created_at && (
-                  <p>
-                    <strong>Fecha:</strong>{' '}
-                    {new Date(item.created_at).toLocaleString()}
-                  </p>
-                )}
+                <p>{i.note}</p>
               </div>
-            ))}
-          </div>
+            )
+          })
         )}
       </div>
     </div>
