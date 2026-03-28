@@ -1,0 +1,1950 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="FamFinance"/><meta name="theme-color" content="#0b0d14"/><title>FamFinance 💎</title><link rel="manifest" href="manifest.json"/><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0b0d14;font-family:sans-serif}#splash{position:fixed;inset:0;background:#0b0d14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:9999;transition:opacity .4s}.spin{width:44px;height:44px;border:3px solid rgba(79,124,255,.15);border-top:3px solid #4f7cff;border-radius:50%;animation:sp .7s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}#splash p{font-size:13px;color:#6b7494;font-family:sans-serif}#splash .logo{font-size:36px}</style></head><body><div id="splash"><div class="logo">💎</div><div class="spin"></div><p>Cargando...</p></div><div id="root"></div><script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script><script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script><script>const { useState, useEffect, useMemo, useCallback } = React;
+
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+// ============================================================
+// SEED DATA
+// ============================================================
+const CATEGORIES = [
+  { id:"1",  name:"Vivienda",        icon:"🏠", color:"#3b82f6" },
+  { id:"2",  name:"Servicios",       icon:"💡", color:"#f59e0b" },
+  { id:"3",  name:"Mercado",         icon:"🛒", color:"#10b981" },
+  { id:"4",  name:"Restaurantes",    icon:"🍽️", color:"#ef4444" },
+  { id:"5",  name:"Transporte",      icon:"🚗", color:"#8b5cf6" },
+  { id:"6",  name:"Gasolina",        icon:"⛽", color:"#f97316" },
+  { id:"7",  name:"Salud",           icon:"🏥", color:"#06b6d4" },
+  { id:"8",  name:"Educación",       icon:"📚", color:"#6366f1" },
+  { id:"9",  name:"Compras",         icon:"🛍️", color:"#ec4899" },
+  { id:"10", name:"Entretenimiento", icon:"🎬", color:"#14b8a6" },
+  { id:"11", name:"Viajes",          icon:"✈️", color:"#0ea5e9" },
+  { id:"12", name:"Mascotas",        icon:"🐾", color:"#a78bfa" },
+  { id:"13", name:"Colombia",        icon:"🇨🇴", color:"#facc15" },
+  { id:"14", name:"Ahorros",         icon:"💰", color:"#22c55e" },
+  { id:"15", name:"Otros",           icon:"📦", color:"#94a3b8" },
+];
+
+const SEED_ENTRIES = [
+  { id:"j1",  type:"gasto",  person:"Diego",      amount:1850, category_id:"1",  note:"Arriendo",         entry_date:"2025-01-02" },
+  { id:"j2",  type:"gasto",  person:"Compartido", amount:310,  category_id:"2",  note:"Servicios",        entry_date:"2025-01-05" },
+  { id:"j3",  type:"gasto",  person:"Kelly",      amount:420,  category_id:"3",  note:"Mercado",          entry_date:"2025-01-08" },
+  { id:"j4",  type:"gasto",  person:"Diego",      amount:85,   category_id:"4",  note:"Cena",             entry_date:"2025-01-12" },
+  { id:"j5",  type:"ahorro", person:"Diego",      amount:400,  category_id:"14", note:"Fondo",            entry_date:"2025-01-15" },
+  { id:"j6",  type:"gasto",  person:"Kelly",      amount:60,   category_id:"5",  note:"Uber",             entry_date:"2025-01-18" },
+  { id:"j7",  type:"gasto",  person:"Compartido", amount:180,  category_id:"10", note:"Netflix",          entry_date:"2025-01-20" },
+  { id:"j8",  type:"ahorro", person:"Kelly",      amount:250,  category_id:"13", note:"Colombia",         entry_date:"2025-01-22" },
+  { id:"j9",  type:"gasto",  person:"Diego",      amount:110,  category_id:"6",  note:"Gasolina",         entry_date:"2025-01-25" },
+  { id:"j10", type:"gasto",  person:"Kelly",      amount:150,  category_id:"9",  note:"Compras",          entry_date:"2025-01-28" },
+  { id:"f1",  type:"gasto",  person:"Diego",      amount:1850, category_id:"1",  note:"Arriendo",         entry_date:"2025-02-01" },
+  { id:"f2",  type:"gasto",  person:"Compartido", amount:295,  category_id:"2",  note:"Servicios",        entry_date:"2025-02-04" },
+  { id:"f3",  type:"gasto",  person:"Kelly",      amount:510,  category_id:"3",  note:"Mercado",          entry_date:"2025-02-07" },
+  { id:"f4",  type:"gasto",  person:"Diego",      amount:120,  category_id:"4",  note:"Cena San Valentín",entry_date:"2025-02-14" },
+  { id:"f5",  type:"ahorro", person:"Diego",      amount:500,  category_id:"14", note:"Fondo",            entry_date:"2025-02-10" },
+  { id:"f6",  type:"gasto",  person:"Kelly",      amount:80,   category_id:"5",  note:"Transporte",       entry_date:"2025-02-17" },
+  { id:"f7",  type:"gasto",  person:"Compartido", amount:190,  category_id:"10", note:"Entretenimiento",  entry_date:"2025-02-20" },
+  { id:"f8",  type:"ahorro", person:"Kelly",      amount:300,  category_id:"13", note:"Colombia",         entry_date:"2025-02-18" },
+  { id:"f9",  type:"gasto",  person:"Diego",      amount:95,   category_id:"6",  note:"Gasolina",         entry_date:"2025-02-22" },
+  { id:"f10", type:"gasto",  person:"Kelly",      amount:200,  category_id:"9",  note:"Ropa",             entry_date:"2025-02-25" },
+  { id:"e1",  type:"gasto",  person:"Diego",      amount:1850, category_id:"1",  note:"Arriendo",         entry_date:"2025-03-01" },
+  { id:"e2",  type:"gasto",  person:"Compartido", amount:320,  category_id:"2",  note:"Electricidad",     entry_date:"2025-03-03" },
+  { id:"e3",  type:"gasto",  person:"Kelly",      amount:480,  category_id:"3",  note:"Súper semanal",    entry_date:"2025-03-05" },
+  { id:"e4",  type:"gasto",  person:"Diego",      amount:95,   category_id:"4",  note:"Cena",             entry_date:"2025-03-07" },
+  { id:"e5",  type:"ahorro", person:"Diego",      amount:500,  category_id:"14", note:"Fondo emergencia", entry_date:"2025-03-08" },
+  { id:"e6",  type:"ahorro", person:"Kelly",      amount:300,  category_id:"13", note:"Colombia",         entry_date:"2025-03-09" },
+  { id:"e7",  type:"gasto",  person:"Kelly",      amount:65,   category_id:"5",  note:"Uber",             entry_date:"2025-03-10" },
+  { id:"e8",  type:"gasto",  person:"Diego",      amount:120,  category_id:"6",  note:"Gasolina",         entry_date:"2025-03-12" },
+  { id:"e9",  type:"gasto",  person:"Compartido", amount:200,  category_id:"10", note:"Netflix+Spotify",  entry_date:"2025-03-14" },
+  { id:"e10", type:"ahorro", person:"Compartido", amount:800,  category_id:"11", note:"Viaje verano",     entry_date:"2025-03-17" },
+  { id:"e11", type:"gasto",  person:"Kelly",      amount:180,  category_id:"9",  note:"Ropa",             entry_date:"2025-03-18" },
+  { id:"e12", type:"gasto",  person:"Diego",      amount:75,   category_id:"7",  note:"Farmacia",         entry_date:"2025-03-19" },
+  { id:"e13", type:"gasto",  person:"Compartido", amount:450,  category_id:"3",  note:"Mercado quincenal",entry_date:"2025-03-20" },
+  { id:"e14", type:"gasto",  person:"Kelly",      amount:90,   category_id:"4",  note:"Almuerzo",         entry_date:"2025-03-22" },
+  { id:"e15", type:"gasto",  person:"Diego",      amount:55,   category_id:"6",  note:"Gasolina",         entry_date:"2025-03-24" },
+];
+
+const SEED_BUDGET     = { total:6000, categories:{"1":2000,"2":400,"3":600,"4":200,"5":150,"6":200,"7":150,"8":100,"9":300,"10":250,"11":500,"12":100,"13":300,"14":600,"15":150} };
+const SEED_SETTLEMENTS= [];
+// Anchor = last settlement date. Interval = days between settlements.
+const SEED_CFG        = { anchorDate:"2025-03-13", intervalDays:14 };
+
+// ============================================================
+// DATE UTILS — pure local arithmetic, zero UTC drift
+// ============================================================
+function localDate(dateStr) {
+  // "YYYY-MM-DD" → local Date, never goes through UTC
+  const [y,m,d] = dateStr.split("-").map(Number);
+  return new Date(y, m-1, d);
+}
+function dateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function addDays(s, n) {
+  const d = localDate(s);
+  d.setDate(d.getDate() + n);
+  return dateStr(d);
+}
+function todayStr() {
+  return dateStr(new Date());
+}
+function fmtDate(s) {
+  return localDate(s).toLocaleDateString("es-CO", { day:"2-digit", month:"short" });
+}
+function fmtMonth(ym) {
+  // ym = "YYYY-MM"
+  const [y,m] = ym.split("-").map(Number);
+  return new Date(y, m-1, 1).toLocaleDateString("es-CO", { month:"short", year:"2-digit" });
+}
+
+// ============================================================
+// PERIOD ENGINE
+// ============================================================
+// anchorDate = the END date of the last completed settlement period.
+// Every period going forward is [anchor+1 .. anchor+interval].
+// Going backward from anchor we build historical periods.
+function buildPeriods(anchorDate, intervalDays) {
+  const today = todayStr();
+  const periods = [];
+
+  // ── backward from anchor ──
+  // each backward period ends the day before the previous one's start
+  let bEnd = anchorDate;
+  for (let i = 0; i < 80; i++) {           // max ~3 years back at 14-day intervals
+    const bStart = addDays(bEnd, -(intervalDays - 1));
+    periods.unshift({ start:bStart, end:bEnd,
+      label:`${fmtDate(bStart)} – ${fmtDate(bEnd)}`, key:bStart });
+    bEnd = addDays(bStart, -1);
+    if (bStart < "2024-01-01") break;        // stop when far enough back
+  }
+
+  // ── forward from anchor ──
+  let fStart = addDays(anchorDate, 1);
+  for (let i = 0; i < 20; i++) {
+    const fEnd = addDays(fStart, intervalDays - 1);
+    periods.push({ start:fStart, end:fEnd,
+      label:`${fmtDate(fStart)} – ${fmtDate(fEnd)}`, key:fStart });
+    if (fStart > today && i >= 1) break;     // 1 future period then stop
+    fStart = addDays(fEnd, 1);
+  }
+
+  return periods;
+}
+
+function getCurrentPeriod(anchorDate, intervalDays) {
+  const today = todayStr();
+  const periods = buildPeriods(anchorDate, intervalDays);
+  return (
+    periods.find(p => today >= p.start && today <= p.end) ||
+    [...periods].reverse().find(p => p.end <= today) ||
+    periods[0]
+  );
+}
+
+function getPeriodEntries(entries, period) {
+  // Only gastos count for settlement
+  return entries.filter(e =>
+    e.type === "gasto" &&
+    e.entry_date >= period.start &&
+    e.entry_date <= period.end
+  );
+}
+
+// ============================================================
+// SETTLEMENT ENGINE
+// ============================================================
+// All gastos split 50/50. Balance = what you paid - your share.
+// Positive balance = overpaid = others owe you.
+function calcSettlement(periodGastos) {
+  const total = periodGastos.reduce((s,e) => s+e.amount, 0);
+  const share = total / 2;
+
+  let dPaid = 0, kPaid = 0;
+  periodGastos.forEach(e => {
+    if      (e.person === "Compartido") { dPaid += e.amount/2; kPaid += e.amount/2; }
+    else if (e.person === "Diego")      { dPaid += e.amount; }
+    else                                { kPaid += e.amount; }
+  });
+
+  const dBal = dPaid - share;
+  const kBal = kPaid - share;
+  let owes = null;
+  if (Math.abs(dBal) > 0.5) {
+    owes = dBal > 0
+      ? { from:"Kelly", to:"Diego", amount: parseFloat(Math.abs(dBal).toFixed(2)) }
+      : { from:"Diego", to:"Kelly", amount: parseFloat(Math.abs(dBal).toFixed(2)) };
+  }
+  return { total, share, dPaid, kPaid, dBal, kBal, owes };
+}
+
+// ============================================================
+// MONTH HELPERS
+// ============================================================
+const monthKey  = s => s.slice(0,7);
+const monthOf   = (entries, mk) => entries.filter(e => e.entry_date.startsWith(mk));
+const allMonths = entries => [...new Set(entries.map(e => monthKey(e.entry_date)))].sort().reverse();
+
+const fmt = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
+const fmtS = n => n>=1000000?`$${(n/1e6).toFixed(1)}M`:n>=1000?`$${(n/1000).toFixed(1)}k`:`$${Math.round(n)}`;
+const getCat = (id,cats) => cats.find(c=>c.id===id)||{name:"Otros",icon:"📦",color:"#94a3b8"};
+
+function useStorage(key, init) {
+  const [v,setV] = useState(()=>{ try{const s=localStorage.getItem(key);return s?JSON.parse(s):init;}catch (e2){return init;} });
+  useEffect(()=>{ try{localStorage.setItem(key,JSON.stringify(v));}catch (e3){} },[key,v]);
+  return [v,setV];
+}
+
+// ============================================================
+// STYLES
+// ============================================================
+const injectStyles = () => {
+  if (document.getElementById("ff4-styles")) return;
+  const s = document.createElement("style");
+  s.id = "ff4-styles";
+  s.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@600;700;800&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0b0d14;--bg2:#12151f;--bg3:#1a1e2e;--bg4:#222738;
+      --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.12);
+      --tx:#eef0f8;--mt:#6b7494;--mt2:#9ba3c4;
+      --ac:#4f7cff;--ac2:#7c5cfc;--ag:linear-gradient(135deg,#4f7cff,#7c5cfc);
+      --gn:#22c55e;--rd:#f43f5e;--yw:#fbbf24;
+      --r:16px;--rs:10px;
+    }
+    html,body,#root{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);-webkit-font-smoothing:antialiased}
+    .app{max-width:430px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;background:var(--bg)}
+    .hdr{padding:50px 18px 10px;display:flex;justify-content:space-between;align-items:flex-start}
+    .hdr-t{font-family:'Sora',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.5px}
+    .hdr-s{font-size:12px;color:var(--mt);margin-top:2px}
+    .body{flex:1;overflow-y:auto;padding:0 14px 100px}
+    .body::-webkit-scrollbar{display:none}
+
+    /* NAV */
+    .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
+      background:rgba(18,21,31,.96);border-top:1px solid var(--bd);
+      display:flex;align-items:flex-end;padding:6px 2px calc(8px + env(safe-area-inset-bottom));z-index:100;backdrop-filter:blur(24px)}
+    .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;cursor:pointer;min-width:0}
+    .ni-ic{font-size:16px;transition:transform .2s}
+    .ni-lb{font-size:9px;font-weight:600;color:var(--mt);letter-spacing:.1px;transition:color .2s;white-space:nowrap}
+    .ni.on .ni-lb{color:var(--ac)}.ni.on .ni-ic{transform:scale(1.15)}
+    .nav-add{width:44px;height:44px;background:var(--ag);border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:22px;color:#fff;cursor:pointer;
+      box-shadow:0 4px 18px rgba(79,124,255,.45);transition:transform .2s;margin-bottom:2px}
+    .nav-add:active{transform:scale(.93)}
+
+    /* MONTH BAR */
+    .mbar{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;-webkit-overflow-scrolling:touch}
+    .mbar::-webkit-scrollbar{display:none}
+    .mc{padding:6px 14px;background:var(--bg2);border:1px solid var(--bd);border-radius:20px;
+      font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;color:var(--mt2);transition:all .15s}
+    .mc.on{background:rgba(79,124,255,.13);border-color:var(--ac);color:var(--ac)}
+
+    /* CARDS */
+    .card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:11px}
+    .csm{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--rs);padding:13px}
+
+    /* HERO */
+    .hero{background:linear-gradient(145deg,#131d3a,#0c1220);
+      border:1px solid rgba(79,124,255,.18);border-radius:20px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
+    .hero::after{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;
+      background:radial-gradient(circle,rgba(79,124,255,.12),transparent 70%);pointer-events:none}
+    .hl{font-size:11px;color:var(--mt);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+    .ha{font-family:'Sora',sans-serif;font-size:34px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+    .hg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+    .hs{background:rgba(255,255,255,.04);border-radius:11px;padding:11px}
+    .hs-l{font-size:11px;color:var(--mt);margin-bottom:3px}
+    .hs-v{font-size:17px;font-weight:800;font-family:'Sora',sans-serif}
+
+    /* SETTLE CARD */
+    .sc{border-radius:20px;padding:20px;margin-bottom:12px;overflow:hidden}
+    .sc.bal{background:linear-gradient(145deg,#0d2010,#091408);border:1px solid rgba(34,197,94,.2)}
+    .sc.owe{background:linear-gradient(145deg,#1e1408,#120d04);border:1px solid rgba(251,191,36,.25)}
+    .sc.set{background:linear-gradient(145deg,#0d1a2e,#091020);border:1px solid rgba(79,124,255,.2)}
+    .sbdg{display:inline-flex;align-items:center;font-size:10px;font-weight:800;
+      padding:3px 10px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px}
+    .sbdg.ok{background:rgba(34,197,94,.15);color:var(--gn)}
+    .sbdg.pe{background:rgba(251,191,36,.15);color:var(--yw)}
+    .sbdg.dn{background:rgba(79,124,255,.15);color:var(--ac)}
+    .ss{font-family:'Sora',sans-serif;font-size:19px;font-weight:800;line-height:1.25;margin-bottom:3px}
+    .su{font-size:12px;color:var(--mt2)}
+
+    /* SECTION */
+    .sec{display:flex;justify-content:space-between;align-items:center;margin:16px 0 9px}
+    .sec-t{font-size:14px;font-weight:700}
+    .sec-a{font-size:13px;color:var(--ac);cursor:pointer}
+
+    /* ENTRY ROW */
+    .er{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--bg2);
+      border-radius:12px;margin-bottom:6px;border:1px solid var(--bd);cursor:pointer}
+    .er:active{background:var(--bg3)}
+    .ei{width:37px;height:37px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .en{flex:1;min-width:0}
+    .enm{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .emt{font-size:11px;color:var(--mt);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+    .eam{font-size:14px;font-weight:800;flex-shrink:0}
+    .eam.gasto{color:var(--rd)}.eam.ahorro{color:var(--gn)}.eam.retiro{color:var(--rd)}
+
+    /* BADGE */
+    .bdg{display:inline-flex;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+    .bdg.Diego{background:rgba(79,124,255,.15);color:#7aa3ff}
+    .bdg.Kelly{background:rgba(236,72,153,.15);color:#f472b6}
+    .bdg.Compartido{background:rgba(124,92,252,.15);color:#b197fc}
+
+    /* FORM */
+    .fg{margin-bottom:14px}
+    .fl{font-size:11px;font-weight:700;color:var(--mt);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:block}
+    .fi{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--rs);
+      padding:12px 14px;font-size:15px;color:var(--tx);font-family:inherit;outline:none;transition:border-color .2s;-webkit-appearance:none}
+    .fi:focus{border-color:var(--ac)}.fi::placeholder{color:var(--mt)}
+    .fam{font-family:'Sora',sans-serif;font-size:32px;font-weight:800;text-align:center;
+      background:transparent;border:none;border-bottom:2px solid var(--bd);border-radius:0;
+      padding:12px;width:100%;color:var(--tx);outline:none}
+    .fam:focus{border-bottom-color:var(--ac)}
+    .btn{width:100%;padding:14px;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+    .btnp{background:var(--ag);color:#fff;box-shadow:0 4px 14px rgba(79,124,255,.3)}
+    .btnp:active{transform:scale(.98)}
+    .btng{background:var(--bg3);color:var(--tx);border:1px solid var(--bd)}
+    .btns{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,.3)}
+    .btnr{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;box-shadow:0 4px 14px rgba(220,38,38,.3)}
+
+    /* TOGGLE */
+    .tgl{display:grid;grid-template-columns:1fr 1fr;background:var(--bg3);border-radius:var(--rs);padding:3px;gap:3px}
+    .tgb{padding:9px;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;
+      cursor:pointer;color:var(--mt);background:transparent;transition:all .2s}
+    .tgb.g{background:var(--rd);color:#fff}.tgb.a{background:var(--gn);color:#fff}
+
+    /* PERSON GRID */
+    .pg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+    .pb{padding:9px 4px;border:1px solid var(--bd);border-radius:10px;font-size:12px;font-weight:700;
+      font-family:inherit;cursor:pointer;background:var(--bg3);color:var(--mt);text-align:center;transition:all .2s}
+    .pb.on{border-color:var(--ac);color:var(--ac);background:rgba(79,124,255,.1)}
+
+    /* CAT CHIPS */
+    .cs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+    .cs::-webkit-scrollbar{display:none}
+    .cc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;
+      background:var(--bg3);border:1px solid var(--bd);border-radius:11px;
+      cursor:pointer;min-width:60px;flex-shrink:0;transition:all .2s}
+    .cc.on{border-color:var(--ac);background:rgba(79,124,255,.1)}
+    .cc-ic{font-size:19px}.cc-nm{font-size:10px;font-weight:600;color:var(--mt);white-space:nowrap}
+    .cc.on .cc-nm{color:var(--ac)}
+
+    /* MODAL */
+    .ovl{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+    .sht{background:var(--bg2);border-radius:22px 22px 0 0;padding:16px 16px calc(26px + env(safe-area-inset-bottom));
+      width:100%;max-width:430px;max-height:92dvh;overflow-y:auto;animation:up .25s ease}
+    @keyframes up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    .hdl{width:32px;height:4px;background:var(--bd2);border-radius:2px;margin:0 auto 16px}
+    .sttl{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;margin-bottom:16px}
+
+    /* FILTER CHIPS */
+    .flt{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:9px}
+    .flt::-webkit-scrollbar{display:none}
+    .fc{padding:5px 12px;background:var(--bg2);border:1px solid var(--bd);border-radius:20px;
+      font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;color:var(--mt2);transition:all .15s}
+    .fc.on{background:rgba(79,124,255,.12);border-color:var(--ac);color:var(--ac)}
+
+    /* PROGRESS */
+    .pw{height:6px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin-top:6px}
+    .pb2{height:100%;border-radius:10px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+    .pw.tk{height:9px}
+
+    /* COMPARE GRID */
+    .cg{display:grid;grid-template-columns:1fr 28px 1fr;gap:6px;align-items:center;margin-bottom:12px}
+    .cp{background:var(--bg3);border-radius:13px;padding:13px;text-align:center;border:1px solid var(--bd)}
+
+    /* BUDGET ROW */
+    .bc{margin-bottom:12px}
+    .br{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+    .bcl{font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px}
+
+    /* SAVINGS HERO */
+    .savh{background:linear-gradient(145deg,#0a1f10,#071209);border:1px solid rgba(34,197,94,.2);
+      border-radius:20px;padding:20px;margin-bottom:12px}
+
+    /* TREND CHART */
+    .tbar{display:flex;align-items:flex-end;gap:4px;height:90px;padding:0 2px}
+    .tc{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+    .tb{width:100%;border-radius:4px 4px 0 0;transition:height .5s ease;min-height:3px}
+    .tl{font-size:9px;color:var(--mt);font-weight:600;white-space:nowrap}
+
+    /* ACTION ROW */
+    .ar{display:flex;gap:6px;margin-top:5px;margin-bottom:7px}
+    .ab{flex:1;padding:7px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;
+      font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--mt2)}
+    .ab.del{color:var(--rd);border-color:rgba(244,63,94,.25)}
+
+    /* SETTLED LIST */
+    .sli{display:flex;justify-content:space-between;padding:11px 13px;
+      background:var(--bg2);border:1px solid var(--bd);border-radius:12px;margin-bottom:6px}
+
+    /* PERIOD CHIP */
+    .pch{flex-shrink:0;cursor:pointer;padding:9px 13px;border-radius:12px;min-width:140px;transition:all .15s}
+
+    /* TOAST */
+    .toast{position:fixed;top:56px;left:50%;transform:translateX(-50%);
+      background:#1a2a1a;border:1px solid var(--gn);color:var(--gn);
+      padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;z-index:999;
+      animation:fio 2.5s forwards;white-space:nowrap;pointer-events:none}
+    @keyframes fio{0%{opacity:0;transform:translateX(-50%) translateY(-6px)}15%,75%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0}}
+
+    .empty{text-align:center;padding:40px 20px;color:var(--mt)}
+    .empty-ic{font-size:40px;margin-bottom:8px}
+    .div{height:1px;background:var(--bd);margin:10px 0}
+    select.fi option{background:#1a1e2e}
+  `;
+  document.head.appendChild(s);
+};
+
+// ============================================================
+// SMALL COMPONENTS
+// ============================================================
+function Toast({msg,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,2600);return()=>clearTimeout(t);},[]);
+  return React.createElement('div', { className: "toast", __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}, msg);
+}
+function PBadge({p}){ return React.createElement('span', { className: `bdg ${p}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 401}}, p); }
+function Prog({pct,color,thick}){
+  const bg = pct>=100?"var(--rd)":pct>=80?"var(--yw)":(color||"var(--ac)");
+  return React.createElement('div', { className: `pw${thick?" tk":""}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}, React.createElement('div', { className: "pb2", style: {width:`${Math.min(pct,100)}%`,background:bg}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}));
+}
+function MonthBar({months,sel,onChange}){
+  return (
+    React.createElement('div', { className: "mbar", __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
+      , React.createElement('div', { className: `mc${sel==="all"?" on":""}`, onClick: ()=>onChange("all"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}}, "Todo")
+      , months.map(m=>(
+        React.createElement('div', { key: m, className: `mc${sel===m?" on":""}`, onClick: ()=>onChange(m), __self: this, __source: {fileName: _jsxFileName, lineNumber: 411}}, fmtMonth(m))
+      ))
+    )
+  );
+}
+function TrendChart({data,ck="gasto"}){
+  const max   = Math.max(...data.map(d=>d[ck]||0),1);
+  const color = ck==="gasto"?"var(--rd)":ck==="ahorro"?"var(--gn)":ck==="diego"?"#7aa3ff":"#f472b6";
+  return (
+    React.createElement('div', { className: "tbar", __self: this, __source: {fileName: _jsxFileName, lineNumber: 420}}
+      , data.map((d,i)=>{
+        const v=d[ck]||0, pct=(v/max)*100;
+        return (
+          React.createElement('div', { key: i, className: "tc", __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
+            , React.createElement('div', { style: {fontSize:9,color:"var(--mt2)",fontWeight:700,marginBottom:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 425}}, fmtS(v))
+            , React.createElement('div', { className: "tb", style: {height:`${Math.max(pct,3)}%`,background:color,opacity:i===data.length-1?1:.6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 426}})
+            , React.createElement('div', { className: "tl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 427}}, d.label)
+          )
+        );
+      })
+    )
+  );
+}
+
+// ============================================================
+// ENTRY SHEET (add / edit)
+// ============================================================
+function EntrySheet({entry,onClose,onSave,cats}){
+  const isEdit = !!_optionalChain([entry, 'optionalAccess', _2 => _2.id]);
+  const defDate = todayStr();                          // FIX: was new Date().toISOString() — UTC drift
+  const [type,  setType]   = useState(_optionalChain([entry, 'optionalAccess', _3 => _3.type])||"gasto");
+  const [person,setPerson] = useState(_optionalChain([entry, 'optionalAccess', _4 => _4.person])||"Diego");
+  const [amount,setAmount] = useState(_optionalChain([entry, 'optionalAccess', _5 => _5.amount])?String(entry.amount):"");
+  const [catId, setCatId]  = useState(_optionalChain([entry, 'optionalAccess', _6 => _6.category_id])||"");
+  const [note,  setNote]   = useState(_optionalChain([entry, 'optionalAccess', _7 => _7.note])||"");
+  const [date,  setDate]   = useState(_optionalChain([entry, 'optionalAccess', _8 => _8.entry_date])||defDate);
+
+  const save = () => {
+    const n=parseFloat(amount);
+    if(!n||n<=0||!catId) return;
+    onSave({...(entry||{}),id:_optionalChain([entry, 'optionalAccess', _9 => _9.id])||`e${Date.now()}`,type,person,amount:n,category_id:catId,note,entry_date:date});
+    onClose();
+  };
+  return (
+    React.createElement('div', { className: "ovl", onClick: e=>e.target===e.currentTarget&&onClose(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 455}}
+      , React.createElement('div', { className: "sht", __self: this, __source: {fileName: _jsxFileName, lineNumber: 456}}
+        , React.createElement('div', { className: "hdl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 457}})
+        , React.createElement('div', { className: "sttl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 458}}, isEdit?"Editar":"Nuevo", " Movimiento" )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 459}}
+          , React.createElement('div', { className: "tgl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 460}}
+            , React.createElement('button', { className: `tgb${type==="gasto"?" g":""}`, onClick: ()=>setType("gasto"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}, "💸 Gasto" )
+            , React.createElement('button', { className: `tgb${type==="ahorro"?" a":""}`, onClick: ()=>setType("ahorro"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 462}}, "💰 Ahorro" )
+          )
+        )
+        , React.createElement('div', { className: "fg", style: {textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 465}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 466}}, "Valor")
+          , React.createElement('div', { style: {position:"relative"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 467}}
+            , React.createElement('span', { style: {position:"absolute",left:"calc(50% - 55px)",top:16,fontSize:19,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 468}}, "$")
+            , React.createElement('input', { className: "fam", type: "number", placeholder: "0", value: amount, onChange: e=>setAmount(e.target.value), inputMode: "decimal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 469}})
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 473}}, "Persona")
+          , React.createElement('div', { className: "pg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 474}}
+            , ["Diego","Kelly","Compartido"].map(p=>(
+              React.createElement('button', { key: p, className: `pb${person===p?" on":""}`, onClick: ()=>setPerson(p), __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}, p)
+            ))
+          )
+          , person==="Compartido"&&(
+            React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:6,padding:"6px 10px",background:"rgba(124,92,252,.08)",borderRadius:8,border:"1px solid rgba(124,92,252,.15)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 480}}, "⚡ Se divide 50/50 en la liquidación"
+
+            )
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 486}}, "Categoría")
+          , React.createElement('div', { className: "cs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 487}}
+            , cats.map(c=>(
+              React.createElement('div', { key: c.id, className: `cc${catId===c.id?" on":""}`, onClick: ()=>setCatId(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 489}}
+                , React.createElement('span', { className: "cc-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 490}}, c.icon)
+                , React.createElement('span', { className: "cc-nm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 491}}, c.name)
+              )
+            ))
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 496}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 497}}, "Fecha")
+          , React.createElement('input', { className: "fi", type: "date", value: date, onChange: e=>setDate(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 498}})
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 500}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 501}}, "Nota (opcional)" )
+          , React.createElement('input', { className: "fi", type: "text", placeholder: "Agrega una nota..."  , value: note, onChange: e=>setNote(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 502}})
+        )
+        , React.createElement('button', { className: "btn btnp" , onClick: save, __self: this, __source: {fileName: _jsxFileName, lineNumber: 504}}, "Guardar")
+        , isEdit&&React.createElement('button', { className: "btn btng" , style: {marginTop:7}, onClick: onClose, __self: this, __source: {fileName: _jsxFileName, lineNumber: 505}}, "Cancelar")
+      )
+    )
+  );
+}
+
+// ============================================================
+// WITHDRAW SHEET
+// ============================================================
+function WithdrawSheet({onClose,onSave,cats}){
+  const [person,setPerson] = useState("Diego");
+  const [amount,setAmount] = useState("");
+  const [catId, setCatId]  = useState("");
+  const [note,  setNote]   = useState("");
+  const [date,  setDate]   = useState(todayStr());   // FIX: was toISOString()
+  const save = () => {
+    const n=parseFloat(amount);
+    if(!n||n<=0||!catId) return;
+    onSave({id:`r${Date.now()}`,type:"retiro",person,amount:n,category_id:catId,note,entry_date:date});
+    onClose();
+  };
+  return (
+    React.createElement('div', { className: "ovl", onClick: e=>e.target===e.currentTarget&&onClose(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 527}}
+      , React.createElement('div', { className: "sht", __self: this, __source: {fileName: _jsxFileName, lineNumber: 528}}
+        , React.createElement('div', { className: "hdl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 529}})
+        , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10,marginBottom:16}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 530}}
+          , React.createElement('div', { style: {width:36,height:36,background:"rgba(244,63,94,.15)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 531}}, "📤")
+          , React.createElement('div', { className: "sttl", style: {margin:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 532}}, "Retirar Ahorro" )
+        )
+        , React.createElement('div', { style: {background:"rgba(244,63,94,.07)",border:"1px solid rgba(244,63,94,.2)",borderRadius:10,padding:"10px 13px",marginBottom:14,fontSize:12,color:"#f87171"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 534}}, "⚠️ El retiro descuenta del saldo de ahorros. No afecta gastos ni presupuesto."
+
+        )
+        , React.createElement('div', { className: "fg", style: {textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 537}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 538}}, "Monto a retirar"  )
+          , React.createElement('div', { style: {position:"relative"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 539}}
+            , React.createElement('span', { style: {position:"absolute",left:"calc(50% - 55px)",top:16,fontSize:19,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 540}}, "$")
+            , React.createElement('input', { className: "fam", style: {borderBottomColor:"var(--rd)"}, type: "number", placeholder: "0", value: amount, onChange: e=>setAmount(e.target.value), inputMode: "decimal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 541}})
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 544}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 545}}, "Persona")
+          , React.createElement('div', { className: "pg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 546}}
+            , ["Diego","Kelly","Compartido"].map(p=>(
+              React.createElement('button', { key: p, className: `pb${person===p?" on":""}`, onClick: ()=>setPerson(p), __self: this, __source: {fileName: _jsxFileName, lineNumber: 548}}, p)
+            ))
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 552}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 553}}, "Categoría")
+          , React.createElement('div', { className: "cs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 554}}
+            , cats.map(c=>(
+              React.createElement('div', { key: c.id, className: `cc${catId===c.id?" on":""}`, onClick: ()=>setCatId(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 556}}
+                , React.createElement('span', { className: "cc-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 557}}, c.icon)
+                , React.createElement('span', { className: "cc-nm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 558}}, c.name)
+              )
+            ))
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 563}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 564}}, "Fecha")
+          , React.createElement('input', { className: "fi", type: "date", value: date, onChange: e=>setDate(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 565}})
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 567}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 568}}, "Motivo (opcional)" )
+          , React.createElement('input', { className: "fi", type: "text", placeholder: "Ej: Emergencia, viaje..."  , value: note, onChange: e=>setNote(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 569}})
+        )
+        , React.createElement('button', { className: "btn btnr" , onClick: save, __self: this, __source: {fileName: _jsxFileName, lineNumber: 571}}, "📤 Confirmar Retiro"  )
+        , React.createElement('button', { className: "btn btng" , style: {marginTop:7}, onClick: onClose, __self: this, __source: {fileName: _jsxFileName, lineNumber: 572}}, "Cancelar")
+      )
+    )
+  );
+}
+
+// ============================================================
+// SETTLE SHEET
+// ============================================================
+function SettleSheet({entries,period,onClose,onSettle}){
+  const gastos = getPeriodEntries(entries, period);
+  const s      = calcSettlement(gastos);
+  return (
+    React.createElement('div', { className: "ovl", onClick: e=>e.target===e.currentTarget&&onClose(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 585}}
+      , React.createElement('div', { className: "sht", __self: this, __source: {fileName: _jsxFileName, lineNumber: 586}}
+        , React.createElement('div', { className: "hdl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 587}})
+        , React.createElement('div', { className: "sttl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 588}}, "Liquidar Periodo" )
+        , React.createElement('div', { style: {fontSize:12,color:"var(--mt2)",marginBottom:14}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 589}}, period.label)
+
+        , React.createElement('div', { className: "card", style: {marginBottom:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 591}}
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginBottom:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 592}}
+            , React.createElement('span', { style: {fontSize:13,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 593}}, "Total del periodo"  )
+            , React.createElement('span', { style: {fontSize:16,fontWeight:800,fontFamily:"Sora"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 594}}, fmt(s.total))
+          )
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 596}}
+            , React.createElement('span', { style: {fontSize:13,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 597}}, "Le corresponde a cada uno"    )
+            , React.createElement('span', { style: {fontSize:14,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 598}}, fmt(s.share))
+          )
+          , React.createElement('div', { className: "div", __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}})
+          , [{l:"Diego pagó",paid:s.dPaid,bal:s.dBal},{l:"Kelly pagó",paid:s.kPaid,bal:s.kBal}].map(r=>(
+            React.createElement('div', { key: r.l, style: {display:"flex",justifyContent:"space-between",marginBottom:7}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 602}}
+              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 603}}
+                , React.createElement('div', { style: {fontSize:13,fontWeight:600}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 604}}, r.l)
+                , React.createElement('div', { style: {fontSize:11,color:r.bal>0?"var(--gn)":r.bal<0?"var(--rd)":"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 605}}
+                  , r.bal>0?`le deben ${fmt(r.bal)}`:r.bal<0?`debe ${fmt(Math.abs(r.bal))}`:"cuadrado ✓"
+                )
+              )
+              , React.createElement('span', { style: {fontSize:15,fontWeight:800,fontFamily:"Sora"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 609}}, fmt(r.paid))
+            )
+          ))
+        )
+
+        , s.owes?(
+          React.createElement('div', { style: {background:"rgba(251,191,36,.08)",border:"1px solid rgba(251,191,36,.25)",borderRadius:13,padding:14,marginBottom:12,textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
+            , React.createElement('div', { style: {fontSize:11,color:"var(--yw)",fontWeight:800,letterSpacing:.4,textTransform:"uppercase",marginBottom:7}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}, "Transferencia necesaria" )
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:19,fontWeight:800,marginBottom:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 617}}
+              , React.createElement(PBadge, { p: s.owes.from, __self: this, __source: {fileName: _jsxFileName, lineNumber: 618}}), " " , React.createElement('span', { style: {color:"var(--mt)",margin:"0 6px"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 618}}, "→"), " " , React.createElement(PBadge, { p: s.owes.to, __self: this, __source: {fileName: _jsxFileName, lineNumber: 618}})
+            )
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:26,fontWeight:800,color:"var(--yw)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 620}}, fmt(s.owes.amount))
+          )
+        ):(
+          React.createElement('div', { style: {background:"rgba(34,197,94,.08)",border:"1px solid rgba(34,197,94,.2)",borderRadius:13,padding:14,marginBottom:12,textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 623}}
+            , React.createElement('div', { style: {fontSize:22}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 624}}, "✅")
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:15,fontWeight:700,marginTop:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 625}}, "¡Están cuadrados!" )
+          )
+        )
+
+        , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 629}}
+          , gastos.length, " gastos · "   , fmt(s.total)
+        )
+        , gastos.map(e=>{
+          const cat=getCat(e.category_id,CATEGORIES);
+          const dS=e.person==="Compartido"?e.amount/2:e.person==="Diego"?e.amount:0;
+          const kS=e.person==="Compartido"?e.amount/2:e.person==="Kelly"?e.amount:0;
+          return (
+            React.createElement('div', { key: e.id, style: {display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid var(--bd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 637}}
+              , React.createElement('span', { style: {fontSize:15}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 638}}, cat.icon)
+              , React.createElement('div', { style: {flex:1}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 639}}
+                , React.createElement('div', { style: {fontSize:12,fontWeight:600}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 640}}, cat.name, e.note?` · ${e.note}`:"")
+                , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",display:"flex",gap:5,flexWrap:"wrap",marginTop:1}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 641}}
+                  , React.createElement(PBadge, { p: e.person, __self: this, __source: {fileName: _jsxFileName, lineNumber: 642}}), React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 642}}, "· " , fmtDate(e.entry_date))
+                  , e.person==="Compartido"&&React.createElement('span', { style: {color:"var(--mt2)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 643}}, "D:", fmt(dS), " / K:"  , fmt(kS))
+                )
+              )
+              , React.createElement('span', { style: {fontSize:12,fontWeight:700,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 646}}, fmt(e.amount))
+            )
+          );
+        })
+
+        , React.createElement('button', { className: "btn btns" , style: {marginTop:14}, onClick: ()=>{
+          onSettle({period,settle:s,date:todayStr()});    // FIX: was toISOString()
+          onClose();
+        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 651}}, "✓ Confirmar Liquidación"  )
+        , React.createElement('button', { className: "btn btng" , style: {marginTop:7}, onClick: onClose, __self: this, __source: {fileName: _jsxFileName, lineNumber: 655}}, "Cancelar")
+      )
+    )
+  );
+}
+
+// ============================================================
+// SETTLE CONFIG SHEET
+// ============================================================
+function SettleCfgSheet({cfg,onChange,onClose}){
+  const [anchor,  setAnchor]   = useState(cfg.anchorDate);
+  const [interval,setInterval] = useState(cfg.intervalDays);
+  const nextPreview = useMemo(()=>{
+    try { return addDays(anchor, Number(interval)); } catch (e4) { return null; }  // FIX: pure addDays not toISOString
+  },[anchor,interval]);
+  const save = () => { onChange({anchorDate:anchor,intervalDays:Number(interval)}); onClose(); };
+  return (
+    React.createElement('div', { className: "ovl", onClick: e=>e.target===e.currentTarget&&onClose(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 672}}
+      , React.createElement('div', { className: "sht", __self: this, __source: {fileName: _jsxFileName, lineNumber: 673}}
+        , React.createElement('div', { className: "hdl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 674}})
+        , React.createElement('div', { className: "sttl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 675}}, "⚙️ Configurar Liquidación"  )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 676}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 677}}, "Última fecha liquidada (ancla)"   )
+          , React.createElement('input', { className: "fi", type: "date", value: anchor, onChange: e=>setAnchor(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 678}})
+          , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 679}}, "La app genera todos los periodos hacia atrás y adelante desde esta fecha."
+
+          )
+        )
+        , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 683}}
+          , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 684}}, "Intervalo (días)" )
+          , React.createElement('input', { className: "fi", type: "number", value: interval, min: 7, max: 31, onChange: e=>setInterval(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 685}})
+          , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 686}}, "14 = cada dos viernes · 7 = semanal · 30 = mensual"
+
+          )
+        )
+        , nextPreview&&(
+          React.createElement('div', { style: {fontSize:12,color:"var(--ac)",background:"rgba(79,124,255,.08)",borderRadius:9,padding:"8px 12px",marginBottom:14}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 691}}, "📅 Próxima liquidación: "
+               , React.createElement('strong', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 692}}, fmtDate(nextPreview))
+          )
+        )
+        , React.createElement('button', { className: "btn btnp" , onClick: save, __self: this, __source: {fileName: _jsxFileName, lineNumber: 695}}, "Guardar")
+        , React.createElement('button', { className: "btn btng" , style: {marginTop:7}, onClick: onClose, __self: this, __source: {fileName: _jsxFileName, lineNumber: 696}}, "Cancelar")
+      )
+    )
+  );
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function Dashboard({entries,budget,cats,settlements,cfg,onOpenSettle,sel,setSel,months}){
+  const period    = useMemo(()=>getCurrentPeriod(cfg.anchorDate,cfg.intervalDays),[cfg]);
+  const isSettled = settlements.some(s=>s.period.key===period.key);
+  const pGastos   = getPeriodEntries(entries,period);
+  const settle    = useMemo(()=>calcSettlement(pGastos),[entries,cfg]);
+
+  const mEntries = sel==="all"?entries:monthOf(entries,sel);
+  const gastos   = mEntries.filter(e=>e.type==="gasto");
+  const ahorros  = mEntries.filter(e=>e.type==="ahorro");
+  const tG = gastos.reduce((s,e)=>s+e.amount,0);
+  const tA = ahorros.reduce((s,e)=>s+e.amount,0);
+  const avail = budget.total-tG;
+  const bPct  = budget.total>0?(tG/budget.total)*100:0;
+  const label = sel==="all"?"todos los meses":fmtMonth(sel);
+
+  const byP = ["Diego","Kelly"].map(p=>({
+    p,
+    g: gastos.reduce((s,e)=>e.person===p?s+e.amount:e.person==="Compartido"?s+e.amount/2:s,0),
+    a: ahorros.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0),
+  }));
+
+  const topCats = cats.map(c=>({
+    ...c,
+    total: gastos.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0),
+    bud:   budget.categories[c.id]||0,
+  })).filter(c=>c.total>0).sort((a,b)=>b.total-a.total).slice(0,5);
+
+  return (
+    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 733}}
+      , React.createElement(MonthBar, { months: months, sel: sel, onChange: setSel, __self: this, __source: {fileName: _jsxFileName, lineNumber: 734}})
+
+      /* SETTLEMENT STATUS */
+      , React.createElement('div', { className: `sc ${isSettled?"set":settle.owes?"owe":"bal"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 737}}
+        , React.createElement('div', { className: `sbdg ${isSettled?"dn":settle.owes?"pe":"ok"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 738}}
+          , isSettled?"✓ Liquidado":settle.owes?"⚡ Pendiente":"✓ Cuadrados"
+        )
+        , React.createElement('div', { className: "ss", __self: this, __source: {fileName: _jsxFileName, lineNumber: 741}}
+          , isSettled?"Periodo cerrado":settle.owes?`${settle.owes.from} debe ${fmt(settle.owes.amount)}`:"¡Están al día!"
+        )
+        , React.createElement('div', { className: "su", __self: this, __source: {fileName: _jsxFileName, lineNumber: 744}}
+          , isSettled?"Siguiente periodo activo"
+            :settle.owes?`a ${settle.owes.to} · ${period.label}`
+            :`${period.label} · ${fmt(settle.total)} en gastos`
+        )
+        , !isSettled&&(
+          React.createElement('button', { onClick: onOpenSettle, style: {marginTop:12,padding:"8px 16px",background:"rgba(255,255,255,.07)",
+            border:"1px solid var(--bd2)",borderRadius:9,color:"var(--tx)",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 750}}, "Ver detalle y liquidar →"
+
+          )
+        )
+      )
+
+      /* BUDGET HERO */
+      , React.createElement('div', { className: "hero", __self: this, __source: {fileName: _jsxFileName, lineNumber: 758}}
+        , React.createElement('div', { className: "hl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 759}}, label)
+        , React.createElement('div', { className: "ha", style: {color:avail<0?"var(--rd)":"var(--tx)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 760}}, fmt(avail))
+        , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:3}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 761}}, "disponible de "  , fmt(budget.total))
+        , React.createElement(Prog, { pct: bPct, thick: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 762}})
+        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginTop:5,fontSize:11,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 763}}
+          , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 764}}, "Gastado " , fmt(tG))
+          , React.createElement('span', { style: {color:bPct>=100?"var(--rd)":bPct>=80?"var(--yw)":"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 765}}
+            , bPct>=100?"🔴 Límite":bPct>=80?"⚠️ Cuidado":`${bPct.toFixed(0)}%`
+          )
+        )
+        , React.createElement('div', { className: "hg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 769}}
+          , React.createElement('div', { className: "hs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 770}}, React.createElement('div', { className: "hs-l", __self: this, __source: {fileName: _jsxFileName, lineNumber: 770}}, "💸 Gastado" ), React.createElement('div', { className: "hs-v", style: {color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 770}}, fmt(tG)))
+          , React.createElement('div', { className: "hs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 771}}, React.createElement('div', { className: "hs-l", __self: this, __source: {fileName: _jsxFileName, lineNumber: 771}}, "💰 Ahorrado" ), React.createElement('div', { className: "hs-v", style: {color:"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 771}}, fmt(tA)))
+        )
+      )
+
+      /* DIEGO VS KELLY */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 776}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 776}}, "Diego vs Kelly"  ), React.createElement('span', { style: {fontSize:11,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 776}}, label))
+      , React.createElement('div', { className: "cg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 777}}
+        , byP.map(x=>(
+          React.createElement('div', { key: x.p, className: "cp", __self: this, __source: {fileName: _jsxFileName, lineNumber: 779}}
+            , React.createElement('div', { style: {fontSize:10,color:"var(--mt)",fontWeight:700,letterSpacing:.3,textTransform:"uppercase",marginBottom:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 780}}, x.p)
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:20,fontWeight:800,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 781}}, fmt(x.g))
+            , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 782}}, "gastos")
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:15,fontWeight:800,color:"var(--gn)",marginTop:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 783}}, fmt(x.a))
+            , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 784}}, "ahorros")
+          )
+        ))
+        , React.createElement('div', { style: {textAlign:"center",fontSize:12,fontWeight:700,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 787}}, "VS")
+      )
+
+      /* TOP CATS */
+      , topCats.length>0&&React.createElement(React.Fragment, null
+        , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 792}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 792}}, "Top Categorías" ))
+        , React.createElement('div', { className: "card", __self: this, __source: {fileName: _jsxFileName, lineNumber: 793}}
+          , topCats.map(c=>{
+            const pct=c.bud>0?(c.total/c.bud)*100:0;
+            return (
+              React.createElement('div', { key: c.id, className: "bc", __self: this, __source: {fileName: _jsxFileName, lineNumber: 797}}
+                , React.createElement('div', { className: "br", __self: this, __source: {fileName: _jsxFileName, lineNumber: 798}}
+                  , React.createElement('span', { className: "bcl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 799}}, React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 799}}, c.icon), c.name)
+                  , React.createElement('span', { style: {fontSize:12,color:"var(--mt2)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 800}}, fmt(c.total), c.bud>0?` / ${fmt(c.bud)}`:"")
+                )
+                , c.bud>0&&React.createElement(Prog, { pct: pct, color: c.color, __self: this, __source: {fileName: _jsxFileName, lineNumber: 802}})
+              )
+            );
+          })
+        )
+      )
+
+      /* SAVINGS MINI */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 810}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 810}}, "Ahorros"))
+      , React.createElement('div', { className: "card", style: {display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 811}}
+        , ["Diego","Kelly","Compartido"].map(p=>{
+          const t=ahorros.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0);
+          return React.createElement('div', { key: p, __self: this, __source: {fileName: _jsxFileName, lineNumber: 814}}, React.createElement(PBadge, { p: p, __self: this, __source: {fileName: _jsxFileName, lineNumber: 814}}), React.createElement('div', { style: {fontFamily:"Sora",fontSize:16,fontWeight:800,color:"var(--gn)",marginTop:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 814}}, fmt(t)));
+        })
+      )
+    )
+  );
+}
+
+// ============================================================
+// TRENDS
+// ============================================================
+function Trends({entries,cats,budget,sel,setSel,months}){
+  const [view,setView] = useState("gastos");
+
+  const series = useMemo(()=>{
+    return [...months].slice(0,6).reverse().map(m=>{
+      const me=monthOf(entries,m);
+      const g=me.filter(e=>e.type==="gasto");
+      const a=me.filter(e=>e.type==="ahorro");
+      return {
+        month:m, label:fmtMonth(m),
+        gasto:  g.reduce((s,e)=>s+e.amount,0),
+        ahorro: a.reduce((s,e)=>s+e.amount,0),
+        diego:  g.reduce((s,e)=>e.person==="Compartido"?s+e.amount/2:e.person==="Diego"?s+e.amount:s,0),
+        kelly:  g.reduce((s,e)=>e.person==="Compartido"?s+e.amount/2:e.person==="Kelly"?s+e.amount:s,0),
+      };
+    });
+  },[entries,months]);
+
+  const mE   = sel==="all"?entries:monthOf(entries,sel);
+  const gastos = mE.filter(e=>e.type==="gasto");
+  const tG   = gastos.reduce((s,e)=>s+e.amount,0);
+  const bPct = budget.total>0?(tG/budget.total)*100:0;
+
+  const catData = cats.map(c=>({
+    ...c,
+    total: gastos.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0),
+    bud:   budget.categories[c.id]||0,
+  })).filter(c=>c.total>0||c.bud>0).sort((a,b)=>b.total-a.total);
+  const cMax = Math.max(...catData.map(c=>Math.max(c.total,c.bud)),1);
+
+  const avg  = k => series.length>0?series.reduce((s,d)=>s+(d[k]||0),0)/series.length:0;
+  const last = series[series.length-1];
+  const prev = series[series.length-2];
+  const dPct = prev&&prev.gasto>0?((_optionalChain([last, 'optionalAccess', _10 => _10.gasto])-prev.gasto)/prev.gasto*100):0;
+
+  return (
+    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 860}}
+      , React.createElement(MonthBar, { months: months, sel: sel, onChange: setSel, __self: this, __source: {fileName: _jsxFileName, lineNumber: 861}})
+
+      /* KPIs */
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 864}}
+        , React.createElement('div', { className: "csm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 865}}
+          , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginBottom:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 866}}, "Gasto promedio/mes" )
+          , React.createElement('div', { style: {fontFamily:"Sora",fontSize:20,fontWeight:800,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 867}}, fmt(avg("gasto")))
+          , prev&&React.createElement('div', { style: {fontSize:11,marginTop:3,color:dPct>0?"var(--rd)":"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 868}}, dPct>0?"↑":"↓", " " , Math.abs(dPct).toFixed(0), "% vs anterior"  )
+        )
+        , React.createElement('div', { className: "csm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 870}}
+          , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginBottom:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 871}}, "Ahorro promedio/mes" )
+          , React.createElement('div', { style: {fontFamily:"Sora",fontSize:20,fontWeight:800,color:"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 872}}, fmt(avg("ahorro")))
+          , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:3}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 873}}, series.length, " meses" )
+        )
+      )
+
+      /* CHART */
+      , React.createElement('div', { className: "card", __self: this, __source: {fileName: _jsxFileName, lineNumber: 878}}
+        , React.createElement('div', { style: {display:"flex",gap:4,marginBottom:14}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 879}}
+          , [["gastos","💸 Gastos"],["ahorros","💰 Ahorros"],["personas","👤 Personas"]].map(([k,l])=>(
+            React.createElement('button', { key: k, onClick: ()=>setView(k), style: {
+              flex:1,padding:"7px 4px",border:view===k?"1px solid var(--ac)":"1px solid var(--bd)",
+              borderRadius:9,background:view===k?"rgba(79,124,255,.12)":"var(--bg3)",
+              color:view===k?"var(--ac)":"var(--mt)",fontFamily:"inherit",fontSize:11,fontWeight:700,cursor:"pointer"
+            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 881}}, l)
+          ))
+        )
+        , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:.4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 888}}, "Últimos " , series.length, " meses" )
+        , view==="gastos"  && React.createElement(TrendChart, { data: series, ck: "gasto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 889}})
+        , view==="ahorros" && React.createElement(TrendChart, { data: series, ck: "ahorro", __self: this, __source: {fileName: _jsxFileName, lineNumber: 890}})
+        , view==="personas"&&(
+          React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 892}}
+            , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:6,marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 893}}, React.createElement('div', { style: {width:10,height:10,borderRadius:2,background:"#7aa3ff"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 893}}), React.createElement('span', { style: {fontSize:11,color:"var(--mt2)",fontWeight:600}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 893}}, "Diego (50% compartidos)"  ))
+            , React.createElement(TrendChart, { data: series, ck: "diego", __self: this, __source: {fileName: _jsxFileName, lineNumber: 894}})
+            , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:6,margin:"14px 0 8px"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 895}}, React.createElement('div', { style: {width:10,height:10,borderRadius:2,background:"#f472b6"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 895}}), React.createElement('span', { style: {fontSize:11,color:"var(--mt2)",fontWeight:600}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 895}}, "Kelly (50% compartidos)"  ))
+            , React.createElement(TrendChart, { data: series, ck: "kelly", __self: this, __source: {fileName: _jsxFileName, lineNumber: 896}})
+          )
+        )
+      )
+
+      /* MONTH TABLE */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 902}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 902}}, "Resumen por Mes"  ))
+      , React.createElement('div', { className: "card", __self: this, __source: {fileName: _jsxFileName, lineNumber: 903}}
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,marginBottom:9,paddingBottom:8,borderBottom:"1px solid var(--bd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 904}}
+          , ["Mes","Gastos","Ahorros","Neto"].map(h=>(
+            React.createElement('div', { key: h, style: {fontSize:10,fontWeight:800,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.3}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 906}}, h)
+          ))
+        )
+        , [...series].reverse().map(d=>(
+          React.createElement('div', { key: d.month, style: {display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 910}}
+            , React.createElement('div', { style: {fontSize:12,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 911}}, d.label)
+            , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 912}}, fmtS(d.gasto))
+            , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 913}}, fmtS(d.ahorro))
+            , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:d.ahorro>d.gasto?"var(--gn)":"var(--mt2)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 914}}, fmtS(d.ahorro-d.gasto))
+          )
+        ))
+      )
+
+      /* BUDGET VS ACTUAL */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 920}}
+        , React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 921}}, "Gasto vs Presupuesto"  )
+        , React.createElement('span', { style: {fontSize:11,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 922}}, sel==="all"?"todo":fmtMonth(sel))
+      )
+      , React.createElement('div', { className: "card", style: {marginBottom:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 924}}
+        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 925}}
+          , React.createElement('span', { style: {fontSize:13,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 926}}, "Total del mes"  )
+          , React.createElement('span', { style: {fontSize:12,color:"var(--mt2)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 927}}, fmt(tG), " / "  , fmt(budget.total))
+        )
+        , React.createElement(Prog, { pct: bPct, thick: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 929}})
+        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginTop:5,fontSize:11}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 930}}
+          , React.createElement('span', { style: {color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 931}}, "Disponible: " , fmt(budget.total-tG))
+          , React.createElement('span', { style: {color:bPct>=100?"var(--rd)":bPct>=80?"var(--yw)":"var(--gn)",fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
+            , bPct>=100?"🔴 Superado":bPct>=80?`⚠️ ${bPct.toFixed(0)}%`:`✓ ${bPct.toFixed(0)}%`
+          )
+        )
+      )
+      , catData.length===0&&React.createElement('div', { className: "empty", __self: this, __source: {fileName: _jsxFileName, lineNumber: 937}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 937}}, "📊"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 937}}, "Sin datos" ))
+      , catData.map(c=>{
+        const pct=c.bud>0?(c.total/c.bud)*100:0;
+        return (
+          React.createElement('div', { key: c.id, className: "card", style: {marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
+              , React.createElement('span', { style: {fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 943}}
+                , React.createElement('span', { style: {fontSize:18}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 944}}, c.icon), c.name
+              )
+              , React.createElement('div', { style: {textAlign:"right"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 946}}
+                , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:pct>=100?"var(--rd)":pct>=80?"var(--yw)":"var(--tx)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 947}}, fmt(c.total))
+                , c.bud>0&&React.createElement('div', { style: {fontSize:10,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 948}}, "de " , fmt(c.bud))
+              )
+            )
+            , React.createElement('div', { style: {position:"relative",height:8,background:"rgba(255,255,255,.06)",borderRadius:10,overflow:"hidden"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 951}}
+              , c.bud>0&&React.createElement('div', { style: {position:"absolute",left:`${Math.min((c.bud/cMax)*100,100)}%`,top:0,width:2,height:"100%",background:"rgba(255,255,255,.25)",zIndex:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}})
+              , React.createElement('div', { style: {height:"100%",width:`${Math.min((c.total/cMax)*100,100)}%`,
+                background:pct>=100?"var(--rd)":pct>=80?"var(--yw)":c.color,borderRadius:10,transition:"width .6s ease"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}})
+            )
+            , c.bud>0&&(
+              React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginTop:4,fontSize:10,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 957}}
+                , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 958}}, pct.toFixed(0), "% usado" )
+                , React.createElement('span', { style: {color:c.bud>=c.total?"var(--gn)":"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 959}}
+                  , c.bud>=c.total?`${fmt(c.bud-c.total)} disponible`:`${fmt(c.total-c.bud)} excedido`
+                )
+              )
+            )
+          )
+        );
+      })
+    )
+  );
+}
+
+// ============================================================
+// LIQUIDACIONES — with period selector
+// ============================================================
+function Liquidaciones({entries,settlements,cfg,setCfg,onOpenSettle,onRemoveSett}){
+  const [showCfg, setShowCfg] = useState(false);
+  const today = todayStr();
+
+  const allPeriods = useMemo(()=>buildPeriods(cfg.anchorDate,cfg.intervalDays),[cfg]);
+  const currentP   = useMemo(()=>getCurrentPeriod(cfg.anchorDate,cfg.intervalDays),[cfg]);
+
+  // FIX: Show ALL periods that have gastos entries + current period + 1 future
+  // Previously filtered out periods with entries outside a "recent" window — that's why gastos weren't showing
+  const relevant = useMemo(()=>{
+    return allPeriods.filter(p=>{
+      const hasData    = entries.some(e=>e.type==="gasto"&&e.entry_date>=p.start&&e.entry_date<=p.end);
+      const isCurrent  = p.key===currentP.key;
+      const isNearFuture = p.start<=addDays(today,cfg.intervalDays*2)&&p.start>today;
+      return hasData||isCurrent||isNearFuture;
+    });
+  },[allPeriods,entries,currentP,cfg,today]);
+
+  const [selKey, setSelKey] = useState(()=>currentP.key);
+
+  useEffect(()=>setSelKey(getCurrentPeriod(cfg.anchorDate,cfg.intervalDays).key),[cfg]);
+
+  const selPeriod  = allPeriods.find(p=>p.key===selKey)||currentP;
+  const isSettled  = settlements.some(s=>s.period.key===selPeriod.key);
+  const pGastos    = getPeriodEntries(entries,selPeriod);
+  const settle     = useMemo(()=>calcSettlement(pGastos),[entries,selPeriod]);
+  const isFuture   = selPeriod.start>today;
+  const nextDate   = addDays(currentP.end,1);
+
+  return (
+    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1004}}
+      , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1005}}
+        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1006}}
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1007}}, "Cada " , cfg.intervalDays, " días" )
+          , React.createElement('div', { style: {fontSize:11,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1008}}, "Próxima: " , fmtDate(nextDate))
+        )
+        , React.createElement('button', { onClick: ()=>setShowCfg(true), style: {padding:"7px 13px",background:"var(--bg3)",border:"1px solid var(--bd2)",
+          borderRadius:9,color:"var(--mt2)",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1010}}, "⚙️ Configurar"
+
+        )
+      )
+
+      /* PERIOD SELECTOR */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1017}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1017}}, "Seleccionar Periodo" ))
+      , relevant.length===0&&React.createElement('div', { className: "empty", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1018}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1018}}, "📅"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1018}}, "Sin periodos con datos"   ))
+      , React.createElement('div', { style: {display:"flex",gap:7,overflowX:"auto",paddingBottom:8,WebkitOverflowScrolling:"touch",marginBottom:14}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1019}}
+        , [...relevant].reverse().map(p=>{
+          const pSett = settlements.some(s=>s.period.key===p.key);
+          const pCurr = p.key===currentP.key;
+          const pSettle = calcSettlement(getPeriodEntries(entries,p));
+          const sel = p.key===selKey;
+          return (
+            React.createElement('div', { key: p.key, className: "pch", onClick: ()=>setSelKey(p.key), style: {
+              background: sel?"rgba(79,124,255,.15)":"var(--bg2)",
+              border: sel?"1px solid var(--ac)":"1px solid var(--bd)",
+            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1026}}
+              , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:5,marginBottom:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1030}}
+                , React.createElement('div', { style: {width:7,height:7,borderRadius:"50%",flexShrink:0,
+                  background:pSett?"var(--gn)":pCurr?"var(--yw)":"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1031}})
+                , React.createElement('span', { style: {fontSize:10,fontWeight:700,color:pSett?"var(--gn)":pCurr?"var(--yw)":"var(--mt)",textTransform:"uppercase",letterSpacing:.3}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1033}}
+                  , pSett?"Liquidado":pCurr?"Actual":"Pasado"
+                )
+              )
+              , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:sel?"var(--ac)":"var(--tx)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1037}}, p.label)
+              , !pSett&&pSettle.total>0&&(
+                React.createElement('div', { style: {fontSize:11,marginTop:3,color:pSettle.owes?"var(--yw)":"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1039}}
+                  , pSettle.owes?`${pSettle.owes.from} debe ${fmt(pSettle.owes.amount)}`:"Cuadrados ✓"
+                )
+              )
+              , pSett&&React.createElement('div', { style: {fontSize:11,marginTop:3,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1043}}, fmt(pSettle.total))
+              , !pSett&&pSettle.total===0&&React.createElement('div', { style: {fontSize:11,marginTop:3,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1044}}, "Sin gastos" )
+            )
+          );
+        })
+      )
+
+      /* SELECTED DETAIL */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1051}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1051}}, "Detalle"), React.createElement('span', { style: {fontSize:11,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1051}}, selPeriod.label))
+
+      , isFuture?(
+        React.createElement('div', { style: {background:"var(--bg2)",border:"1px solid var(--bd)",borderRadius:14,padding:20,textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1054}}
+          , React.createElement('div', { style: {fontSize:28,marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1055}}, "📅")
+          , React.createElement('div', { style: {fontFamily:"Sora",fontSize:14,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1056}}, "Periodo futuro" )
+          , React.createElement('div', { style: {fontSize:12,color:"var(--mt)",marginTop:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1057}}, "Comienza el "  , fmtDate(selPeriod.start))
+        )
+      ):isSettled?(
+        React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1060}}
+          , React.createElement('div', { style: {background:"rgba(34,197,94,.06)",border:"1px solid rgba(34,197,94,.2)",borderRadius:14,padding:16,marginBottom:12,textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1061}}
+            , React.createElement('div', { style: {fontSize:26,marginBottom:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1062}}, "✅")
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:14,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1063}}, "Periodo liquidado" )
+            , (()=>{
+              const rec=settlements.find(s=>s.period.key===selPeriod.key);
+              return rec?(React.createElement('div', { style: {fontSize:12,color:"var(--mt)",marginTop:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1066}}
+                , rec.settle.owes?`${rec.settle.owes.from} → ${rec.settle.owes.to} · ${fmt(rec.settle.owes.amount)}`:"Sin transferencia · cuadrados"
+                , React.createElement('div', { style: {marginTop:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1068}}, "Liquidado el "  , fmtDate(rec.date))
+              )):null;
+            })()
+          )
+          , React.createElement(PeriodBreakdown, { gastos: pGastos, settle: settle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1072}})
+        )
+      ):(
+        React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1075}}
+          , React.createElement('div', { className: `sc ${settle.owes?"owe":"bal"}`, style: {marginBottom:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1076}}
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"flex-start"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1077}}
+              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1078}}
+                , React.createElement('div', { className: `sbdg ${settle.owes?"pe":"ok"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1079}}, settle.owes?"⚡ Pendiente":"✓ Cuadrados")
+                , React.createElement('div', { className: "ss", style: {fontSize:17}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1080}}, settle.owes?`${settle.owes.from} debe ${fmt(settle.owes.amount)}`:"¡Están al día!")
+                , settle.owes&&React.createElement('div', { className: "su", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1081}}, "→ a "  , settle.owes.to)
+              )
+              , React.createElement('div', { style: {textAlign:"right"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1083}}
+                , React.createElement('div', { style: {fontSize:10,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1084}}, "Total periodo" )
+                , React.createElement('div', { style: {fontFamily:"Sora",fontSize:19,fontWeight:800}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1085}}, fmt(settle.total))
+              )
+            )
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginTop:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1088}}
+              , [{p:"Diego",paid:settle.dPaid,bal:settle.dBal},{p:"Kelly",paid:settle.kPaid,bal:settle.kBal}].map(r=>(
+                React.createElement('div', { key: r.p, style: {background:"rgba(255,255,255,.04)",borderRadius:10,padding:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1090}}
+                  , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginBottom:3}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1091}}, React.createElement(PBadge, { p: r.p, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1091}}))
+                  , React.createElement('div', { style: {fontFamily:"Sora",fontSize:15,fontWeight:800}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1092}}, fmt(r.paid))
+                  , React.createElement('div', { style: {fontSize:10,marginTop:2,color:r.bal>0?"var(--gn)":r.bal<0?"var(--rd)":"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1093}}
+                    , r.bal>0?`le deben ${fmt(r.bal)}`:r.bal<0?`debe ${fmt(Math.abs(r.bal))}`:"cuadrado ✓"
+                  )
+                )
+              ))
+            )
+            , settle.total>0&&(
+              React.createElement('button', { onClick: ()=>onOpenSettle(selPeriod), className: "btn btns" , style: {marginTop:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1100}}, "Liquidar Periodo →"  )
+            )
+            , settle.total===0&&React.createElement('div', { style: {fontSize:12,color:"var(--mt)",marginTop:12,textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1102}}, "Sin gastos en este periodo"    )
+          )
+          , React.createElement(PeriodBreakdown, { gastos: pGastos, settle: settle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1104}})
+        )
+      )
+
+      /* HISTORY */
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1109}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1109}}, "Historial"))
+      , settlements.length===0&&React.createElement('div', { className: "empty", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1110}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1110}}, "📋"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1110}}, "Sin liquidaciones aún"  ))
+      , [...settlements].reverse().map((s,i)=>(
+        React.createElement('div', { key: i, className: "sli", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1112}}
+          , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1113}}
+            , React.createElement('div', { style: {fontSize:13,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1114}}, s.period.label)
+            , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1115}}
+              , s.settle.owes?`${s.settle.owes.from} → ${s.settle.owes.to} · ${fmt(s.settle.owes.amount)}`:"Sin transferencia · cuadrados"
+            )
+            , React.createElement('div', { style: {fontSize:10,color:"var(--mt)",marginTop:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1118}}, "Liquidado el "  , fmtDate(s.date))
+          )
+          , React.createElement('div', { style: {textAlign:"right"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1120}}
+            , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:"var(--ac)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1121}}, fmt(s.settle.total))
+            , React.createElement('button', { onClick: ()=>onRemoveSett(settlements.length-1-i), style: {fontSize:10,color:"var(--rd)",background:"none",border:"none",cursor:"pointer",marginTop:5,display:"block"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1122}}, "eliminar")
+          )
+        )
+      ))
+      , showCfg&&React.createElement(SettleCfgSheet, { cfg: cfg, onChange: setCfg, onClose: ()=>setShowCfg(false), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1126}})
+    )
+  );
+}
+
+function PeriodBreakdown({gastos,settle}){
+  if(gastos.length===0) return React.createElement('div', { className: "empty", style: {paddingTop:16}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1132}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1132}}, "🧾"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1132}}, "Sin gastos en este periodo"    ));
+  return (
+    React.createElement('div', { className: "card", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1134}}
+      , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1135}}
+        , gastos.length, " gastos · "   , fmt(settle.total)
+      )
+      , gastos.map(e=>{
+        const cat=getCat(e.category_id,CATEGORIES);
+        const dS=e.person==="Compartido"?e.amount/2:e.person==="Diego"?e.amount:0;
+        const kS=e.person==="Compartido"?e.amount/2:e.person==="Kelly"?e.amount:0;
+        return (
+          React.createElement('div', { key: e.id, style: {display:"flex",alignItems:"center",gap:9,padding:"8px 0",borderBottom:"1px solid var(--bd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1143}}
+            , React.createElement('span', { style: {fontSize:15}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1144}}, cat.icon)
+            , React.createElement('div', { style: {flex:1}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1145}}
+              , React.createElement('div', { style: {fontSize:12,fontWeight:600}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1146}}, cat.name, e.note?` · ${e.note}`:"")
+              , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:1,display:"flex",gap:5,flexWrap:"wrap"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1147}}
+                , React.createElement(PBadge, { p: e.person, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1148}}), React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1148}}, "· " , fmtDate(e.entry_date))
+                , e.person==="Compartido"&&React.createElement('span', { style: {color:"var(--mt2)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1149}}, "D:", fmt(dS), " / K:"  , fmt(kS))
+              )
+            )
+            , React.createElement('span', { style: {fontSize:12,fontWeight:700,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1152}}, fmt(e.amount))
+          )
+        );
+      })
+    )
+  );
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function History({entries,cats,onEdit,onDelete,sel,setSel,months}){
+  const [fP,setFP]=useState("Todos");
+  const [fT,setFT]=useState("Todos");
+  const [fC,setFC]=useState("Todas");
+  const [exp,setExp]=useState(null);
+
+  const filtered = useMemo(()=>entries.filter(e=>{
+    if(fP!=="Todos"&&e.person!==fP) return false;
+    // FIX: "Todos" must include "retiro" type too — was hiding retiros
+    if(fT==="gasto"&&e.type!=="gasto") return false;
+    if(fT==="ahorro"&&!["ahorro","retiro"].includes(e.type)) return false;
+    if(fC!=="Todas"&&e.category_id!==fC) return false;
+    if(sel!=="all"&&!e.entry_date.startsWith(sel)) return false;
+    return true;
+  }).sort((a,b)=>b.entry_date.localeCompare(a.entry_date)),[entries,fP,fT,fC,sel]);
+
+  return (
+    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1180}}
+      , React.createElement(MonthBar, { months: months, sel: sel, onChange: setSel, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1181}})
+      , React.createElement('div', { className: "flt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1182}}
+        , ["Todos","Diego","Kelly","Compartido"].map(p=>(
+          React.createElement('div', { key: p, className: `fc${fP===p?" on":""}`, onClick: ()=>setFP(p), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1184}}, p)
+        ))
+      )
+      , React.createElement('div', { className: "flt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1187}}
+        , [["Todos","Todos"],["gasto","💸 Gastos"],["ahorro","💰 Ahorros/Retiros"]].map(([k,l])=>(
+          React.createElement('div', { key: k, className: `fc${fT===k?" on":""}`, onClick: ()=>setFT(k), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1189}}, l)
+        ))
+      )
+      , React.createElement('div', { className: "flt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1192}}
+        , React.createElement('div', { className: `fc${fC==="Todas"?" on":""}`, onClick: ()=>setFC("Todas"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1193}}, "Todas")
+        , cats.map(c=>React.createElement('div', { key: c.id, className: `fc${fC===c.id?" on":""}`, onClick: ()=>setFC(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1194}}, c.icon, " " , c.name))
+      )
+      , React.createElement('div', { style: {fontSize:12,color:"var(--mt)",marginBottom:10,fontWeight:600}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1196}}, filtered.length, " movimientos" )
+      , filtered.length===0&&React.createElement('div', { className: "empty", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1197}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1197}}, "🔍"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1197}}, "Sin movimientos" ))
+      , filtered.map(e=>{
+        const cat=getCat(e.category_id,cats);
+        const isRet=e.type==="retiro";
+        const open=exp===e.id;
+        return (
+          React.createElement('div', { key: e.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1203}}
+            , React.createElement('div', { className: "er", onClick: ()=>setExp(open?null:e.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1204}}
+              , React.createElement('div', { className: "ei", style: {background:isRet?"rgba(244,63,94,.12)":cat.color+"22"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1205}}, cat.icon)
+              , React.createElement('div', { className: "en", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1206}}
+                , React.createElement('div', { className: "enm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1207}}
+                  , cat.name
+                  , isRet&&React.createElement('span', { style: {fontSize:10,background:"rgba(244,63,94,.15)",color:"#f87171",borderRadius:5,padding:"1px 5px",fontWeight:700,marginLeft:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1209}}, "RETIRO")
+                  , e.note?` · ${e.note}`:""
+                )
+                , React.createElement('div', { className: "emt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1212}}
+                  , React.createElement(PBadge, { p: e.person, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1213}})
+                  , e.person==="Compartido"&&React.createElement('span', { style: {fontSize:10,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1214}}, "50/50")
+                  , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1215}}, "· " , fmtDate(e.entry_date))
+                )
+              )
+              , React.createElement('div', { className: `eam ${e.type}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1218}}, e.type==="gasto"?"-":"+", fmt(e.amount))
+            )
+            , open&&(
+              React.createElement('div', { className: "ar", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1221}}
+                , !isRet&&React.createElement('button', { className: "ab", onClick: ()=>{onEdit(e);setExp(null)}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1222}}, "✏️ Editar" )
+                , React.createElement('button', { className: "ab del" , onClick: ()=>{onDelete(e.id);setExp(null)}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1223}}, "🗑️ Eliminar" )
+              )
+            )
+          )
+        );
+      })
+    )
+  );
+}
+
+// ============================================================
+// SAVINGS
+// ============================================================
+function Savings({entries,cats,onSaveEntry,sel,setSel,months}){
+  const [showW, setShowW] = useState(false);
+  const [expId, setExpId] = useState(null);
+  const [onlyCat,setOnlyCat] = useState("Todas");
+
+  const allSav = entries.filter(e=>e.type==="ahorro");
+  const allRet = entries.filter(e=>e.type==="retiro");
+  const net    = allSav.reduce((s,e)=>s+e.amount,0)-allRet.reduce((s,e)=>s+e.amount,0);
+
+  const mE     = sel==="all"?entries:monthOf(entries,sel);
+  const mSav   = mE.filter(e=>e.type==="ahorro");
+  const mRet   = mE.filter(e=>e.type==="retiro");
+
+  const byP = ["Diego","Kelly","Compartido"].map(p=>({
+    p,
+    saved:    allSav.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0),
+    withdrew: allRet.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0),
+    net:      allSav.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0)-allRet.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0),
+  }));
+
+  const byCat = cats.map(c=>({
+    ...c,
+    saved:    allSav.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0),
+    withdrew: allRet.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0),
+    net:      allSav.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0)-allRet.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0),
+  })).filter(c=>c.saved>0||c.withdrew>0).sort((a,b)=>b.net-a.net);
+  const cMax=Math.max(...byCat.map(c=>c.saved),1);
+
+  const activity=[...mSav,...mRet]
+    .filter(e=>onlyCat==="Todas"||e.category_id===onlyCat)
+    .sort((a,b)=>b.entry_date.localeCompare(a.entry_date));
+
+  return (
+    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1269}}
+      , React.createElement(MonthBar, { months: months, sel: sel, onChange: setSel, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1270}})
+      , React.createElement('div', { className: "savh", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1271}}
+        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"flex-start"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1272}}
+          , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1273}}
+            , React.createElement('div', { className: "hl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1274}}, "Saldo Total Ahorrado"  )
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:34,fontWeight:800,color:net>=0?"var(--gn)":"var(--rd)",lineHeight:1}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1275}}, fmt(net))
+            , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1276}}
+              , fmt(allSav.reduce((s,e)=>s+e.amount,0)), " ahorrado · "   , fmt(allRet.reduce((s,e)=>s+e.amount,0)), " retirado"
+            )
+          )
+          , React.createElement('button', { onClick: ()=>setShowW(true), style: {display:"flex",flexDirection:"column",alignItems:"center",gap:3,
+            background:"rgba(244,63,94,.12)",border:"1px solid rgba(244,63,94,.25)",
+            borderRadius:12,padding:"10px 14px",cursor:"pointer",flexShrink:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1280}}
+            , React.createElement('span', { style: {fontSize:20}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1283}}, "📤")
+            , React.createElement('span', { style: {fontSize:10,fontWeight:700,color:"#f87171"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1284}}, "Retirar")
+          )
+        )
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginTop:14}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1287}}
+          , byP.map(x=>(
+            React.createElement('div', { key: x.p, style: {textAlign:"center",background:"rgba(255,255,255,.04)",borderRadius:10,padding:9}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1289}}
+              , React.createElement(PBadge, { p: x.p, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1290}})
+              , React.createElement('div', { style: {fontFamily:"Sora",fontSize:16,fontWeight:800,color:x.net>=0?"var(--gn)":"var(--rd)",marginTop:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1291}}, fmt(x.net))
+              , x.withdrew>0&&React.createElement('div', { style: {fontSize:9,color:"var(--rd)",marginTop:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1292}}, "-", fmt(x.withdrew))
+            )
+          ))
+        )
+      )
+
+      , sel!=="all"&&(
+        React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1299}}
+          , React.createElement('div', { className: "csm", style: {textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1300}}
+            , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginBottom:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1301}}, "💰 Ahorrado" )
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:20,fontWeight:800,color:"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1302}}, fmt(mSav.reduce((s,e)=>s+e.amount,0)))
+          )
+          , React.createElement('div', { className: "csm", style: {textAlign:"center"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1304}}
+            , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginBottom:4}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1305}}, "📤 Retirado" )
+            , React.createElement('div', { style: {fontFamily:"Sora",fontSize:20,fontWeight:800,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1306}}, fmt(mRet.reduce((s,e)=>s+e.amount,0)))
+          )
+        )
+      )
+
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1311}}, React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1311}}, "Por Categoría" ), React.createElement('span', { style: {fontSize:11,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1311}}, "acumulado"))
+      , byCat.length===0&&React.createElement('div', { className: "empty", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1312}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1312}}, "💰"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1312}}, "Sin ahorros aún"  ))
+      , byCat.map(c=>(
+        React.createElement('div', { key: c.id, className: "card", style: {marginBottom:8,cursor:"pointer"}, onClick: ()=>setOnlyCat(onlyCat===c.id?"Todas":c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1314}}
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1315}}
+            , React.createElement('span', { style: {fontSize:14,fontWeight:600,display:"flex",alignItems:"center",gap:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1316}}
+              , React.createElement('span', { style: {fontSize:20}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1317}}, c.icon), c.name
+              , onlyCat===c.id&&React.createElement('span', { style: {fontSize:10,color:"var(--ac)",background:"rgba(79,124,255,.12)",borderRadius:6,padding:"1px 6px"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1318}}, "filtrado")
+            )
+            , React.createElement('div', { style: {textAlign:"right"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1320}}
+              , React.createElement('div', { style: {fontFamily:"Sora",fontSize:16,fontWeight:800,color:c.net>=0?"var(--gn)":"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1321}}, fmt(c.net))
+              , c.withdrew>0&&React.createElement('div', { style: {fontSize:10,color:"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1322}}, "-", fmt(c.withdrew))
+            )
+          )
+          , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:3}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1325}}
+            , [{lbl:"Ahorrado",v:c.saved,col:"var(--gn)"},{lbl:"Retirado",v:c.withdrew,col:"var(--rd)"}].filter(r=>r.v>0).map(r=>(
+              React.createElement('div', { key: r.lbl, style: {display:"flex",alignItems:"center",gap:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1327}}
+                , React.createElement('span', { style: {fontSize:10,color:"var(--mt)",width:50}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1328}}, r.lbl)
+                , React.createElement('div', { style: {flex:1,height:6,background:"rgba(255,255,255,.07)",borderRadius:10,overflow:"hidden"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1329}}
+                  , React.createElement('div', { style: {height:"100%",width:`${(r.v/cMax)*100}%`,background:r.col,borderRadius:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1330}})
+                )
+                , React.createElement('span', { style: {fontSize:10,color:r.col,fontWeight:700,width:46,textAlign:"right"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1332}}, fmt(r.v))
+              )
+            ))
+          )
+        )
+      ))
+
+      , React.createElement('div', { className: "sec", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1339}}
+        , React.createElement('span', { className: "sec-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1340}}, "Movimientos")
+        , onlyCat!=="Todas"&&React.createElement('span', { className: "sec-a", onClick: ()=>setOnlyCat("Todas"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1341}}, "Ver todos ✕"  )
+      )
+      , React.createElement('div', { className: "flt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1343}}
+        , React.createElement('div', { className: `fc${onlyCat==="Todas"?" on":""}`, onClick: ()=>setOnlyCat("Todas"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1344}}, "Todas")
+        , byCat.map(c=>React.createElement('div', { key: c.id, className: `fc${onlyCat===c.id?" on":""}`, onClick: ()=>setOnlyCat(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1345}}, c.icon, " " , c.name))
+      )
+      , activity.length===0&&React.createElement('div', { className: "empty", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1347}}, React.createElement('div', { className: "empty-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1347}}, "🔍"), React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1347}}, "Sin movimientos" ))
+      , activity.map(e=>{
+        const cat=getCat(e.category_id,cats);
+        const isRet=e.type==="retiro";
+        const open=expId===e.id;
+        return (
+          React.createElement('div', { key: e.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1353}}
+            , React.createElement('div', { className: "er", onClick: ()=>setExpId(open?null:e.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1354}}
+              , React.createElement('div', { className: "ei", style: {background:isRet?"rgba(244,63,94,.12)":cat.color+"22",position:"relative"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1355}}
+                , cat.icon
+                , isRet&&React.createElement('span', { style: {position:"absolute",bottom:-3,right:-3,fontSize:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1357}}, "📤")
+              )
+              , React.createElement('div', { className: "en", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1359}}
+                , React.createElement('div', { className: "enm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1360}}
+                  , cat.name
+                  , isRet&&React.createElement('span', { style: {fontSize:10,background:"rgba(244,63,94,.15)",color:"#f87171",borderRadius:5,padding:"1px 5px",fontWeight:700,marginLeft:5}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1362}}, "RETIRO")
+                  , e.note?` · ${e.note}`:""
+                )
+                , React.createElement('div', { className: "emt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1365}}, React.createElement(PBadge, { p: e.person, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1365}}), " · "  , fmtDate(e.entry_date))
+              )
+              , React.createElement('div', { className: "eam", style: {color:isRet?"var(--rd)":"var(--gn)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1367}}, isRet?"-":"+", fmt(e.amount))
+            )
+            , open&&React.createElement('div', { className: "ar", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1369}}, React.createElement('button', { className: "ab del" , onClick: ()=>{onSaveEntry(null,e.id);setExpId(null)}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1369}}, "🗑️ Eliminar" ))
+          )
+        );
+      })
+      , showW&&React.createElement(WithdrawSheet, { cats: cats, onClose: ()=>setShowW(false), onSave: e=>{onSaveEntry(e);setShowW(false);}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1373}})
+    )
+  );
+}
+
+// ============================================================
+// EXCEL EXPORT — pure JS, no library needed
+// Generates a real .xlsx file using XML/ZIP structure
+// ============================================================
+function exportToExcel(entries, budget, cats) {
+  const getCatName = id => _optionalChain([cats, 'access', _11 => _11.find, 'call', _12 => _12(c=>c.id===id), 'optionalAccess', _13 => _13.name]) || "Otros";
+
+  // ── Build CSV-compatible data for each sheet ──
+  // Sheet 1: All entries
+  const entriesRows = [
+    ["Fecha","Tipo","Persona","Categoría","Monto","Nota"],
+    ...entries
+      .filter(e=>e.type!=="retiro")
+      .sort((a,b)=>b.entry_date.localeCompare(a.entry_date))
+      .map(e=>[e.entry_date, e.type==="gasto"?"Gasto":"Ahorro", e.person, getCatName(e.category_id), e.amount, e.note||""])
+  ];
+
+  // Sheet 2: Monthly summary
+  const allM = [...new Set(entries.map(e=>e.entry_date.slice(0,7)))].sort().reverse();
+  const summaryRows = [
+    ["Mes","Total Gastos","Total Ahorros","Diego Gastos","Kelly Gastos","Compartido Gastos","Neto (Ahorro-Gasto)"],
+    ...allM.map(m=>{
+      const me = entries.filter(e=>e.entry_date.startsWith(m));
+      const g  = me.filter(e=>e.type==="gasto");
+      const a  = me.filter(e=>e.type==="ahorro");
+      const tG = g.reduce((s,e)=>s+e.amount,0);
+      const tA = a.reduce((s,e)=>s+e.amount,0);
+      return [
+        m,
+        tG, tA,
+        g.filter(e=>e.person==="Diego").reduce((s,e)=>s+e.amount,0),
+        g.filter(e=>e.person==="Kelly").reduce((s,e)=>s+e.amount,0),
+        g.filter(e=>e.person==="Compartido").reduce((s,e)=>s+e.amount,0),
+        tA - tG
+      ];
+    })
+  ];
+
+  // Sheet 3: Budget vs Actual (most recent month)
+  const lastM = allM[0] || new Date().toISOString().slice(0,7);
+  const lastGastos = entries.filter(e=>e.type==="gasto"&&e.entry_date.startsWith(lastM));
+  const budgetRows = [
+    ["Categoría","Presupuesto","Gastado","Disponible","% Usado"],
+    ["TOTAL", budget.total, lastGastos.reduce((s,e)=>s+e.amount,0),
+      budget.total - lastGastos.reduce((s,e)=>s+e.amount,0),
+      budget.total>0?((lastGastos.reduce((s,e)=>s+e.amount,0)/budget.total)*100).toFixed(1)+"%":"N/A"
+    ],
+    ...cats.map(c=>{
+      const spent = lastGastos.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0);
+      const bud   = budget.categories[c.id]||0;
+      return [c.name, bud, spent, bud-spent, bud>0?((spent/bud)*100).toFixed(1)+"%":"Sin presupuesto"];
+    }).filter(r=>r[1]>0||r[2]>0)
+  ];
+
+  // Sheet 4: Liquidations settlement summary
+  const settleRows = [
+    ["Fecha","Periodo","Total","Diego Pagó","Kelly Pagó","Quién Debe","Monto Transferencia"],
+  ];
+  // We don't have settlements here but add placeholder
+  settleRows.push(["(Ver tab Liquidar para el historial de liquidaciones)","","","","","",""]);
+
+  // ── Generate XLSX using XML ──
+  function escXml(v) {
+    if(v===null||v===undefined) return "";
+    return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function buildSheet(rows) {
+    let xml = `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>`;
+    rows.forEach((row, ri) => {
+      xml += `<row r="${ri+1}">`;
+      row.forEach((cell, ci) => {
+        const col = String.fromCharCode(65 + ci);
+        const addr = `${col}${ri+1}`;
+        if(typeof cell === 'number') {
+          xml += `<c r="${addr}" t="n"><v>${cell}</v></c>`;
+        } else {
+          xml += `<c r="${addr}" t="inlineStr"><is><t>${escXml(cell)}</t></is></c>`;
+        }
+      });
+      xml += `</row>`;
+    });
+    xml += `</sheetData></worksheet>`;
+    return xml;
+  }
+
+  const sheets = [
+    { name:"Movimientos",    rows: entriesRows },
+    { name:"Resumen Mensual",rows: summaryRows },
+    { name:"Presupuesto",    rows: budgetRows  },
+  ];
+
+  // Build workbook XML
+  const workbook = `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${s.name}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`;
+
+  const rels = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}</Relationships>`;
+
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`;
+
+  const pkgRels = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+
+  // ── Build ZIP manually (XLSX is a ZIP) ──
+  // Use a minimal ZIP writer in pure JS
+  function strToBytes(str) {
+    const bytes = [];
+    for(let i=0; i<str.length; i++) {
+      const code = str.charCodeAt(i);
+      if(code < 128) bytes.push(code);
+      else if(code < 2048) { bytes.push(0xC0|(code>>6)); bytes.push(0x80|(code&0x3F)); }
+      else { bytes.push(0xE0|(code>>12)); bytes.push(0x80|((code>>6)&0x3F)); bytes.push(0x80|(code&0x3F)); }
+    }
+    return new Uint8Array(bytes);
+  }
+
+  function crc32(bytes) {
+    let crc = 0xFFFFFFFF;
+    const table = new Uint32Array(256);
+    for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);table[i]=c;}
+    for(const b of bytes) crc = table[(crc^b)&0xFF]^(crc>>>8);
+    return (crc^0xFFFFFFFF)>>>0;
+  }
+
+  function uint32LE(n) { return [n&0xFF,(n>>8)&0xFF,(n>>16)&0xFF,(n>>24)&0xFF]; }
+  function uint16LE(n) { return [n&0xFF,(n>>8)&0xFF]; }
+
+  function makeZip(files) {
+    // files = [{name, data: Uint8Array}]
+    const parts = [];
+    const centralDir = [];
+    let offset = 0;
+
+    for(const f of files) {
+      const nameBytes = strToBytes(f.name);
+      const crc = crc32(f.data);
+      const size = f.data.length;
+      // Local file header
+      const localHeader = new Uint8Array([
+        0x50,0x4B,0x03,0x04, // signature
+        0x14,0x00,           // version
+        0x00,0x00,           // flags
+        0x00,0x00,           // compression (stored)
+        0x00,0x00,0x00,0x00, // time/date
+        ...uint32LE(crc),
+        ...uint32LE(size),
+        ...uint32LE(size),
+        ...uint16LE(nameBytes.length),
+        0x00,0x00,           // extra length
+        ...nameBytes
+      ]);
+      parts.push(localHeader);
+      parts.push(f.data);
+
+      // Central directory entry
+      centralDir.push(new Uint8Array([
+        0x50,0x4B,0x01,0x02,
+        0x14,0x00,0x14,0x00,
+        0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,
+        ...uint32LE(crc),
+        ...uint32LE(size),
+        ...uint32LE(size),
+        ...uint16LE(nameBytes.length),
+        0x00,0x00,0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,
+        ...uint32LE(offset),
+        ...nameBytes
+      ]));
+      offset += localHeader.length + size;
+    }
+
+    const cdStart = offset;
+    const cdSize  = centralDir.reduce((s,d)=>s+d.length,0);
+    const eocd = new Uint8Array([
+      0x50,0x4B,0x05,0x06,
+      0x00,0x00,0x00,0x00,
+      ...uint16LE(files.length),
+      ...uint16LE(files.length),
+      ...uint32LE(cdSize),
+      ...uint32LE(cdStart),
+      0x00,0x00
+    ]);
+
+    const allParts = [...parts, ...centralDir, eocd];
+    const total = allParts.reduce((s,p)=>s+p.length,0);
+    const buf = new Uint8Array(total);
+    let pos = 0;
+    for(const p of allParts) { buf.set(p,pos); pos+=p.length; }
+    return buf;
+  }
+
+  const files = [
+    { name:"[Content_Types].xml", data: strToBytes(contentTypes) },
+    { name:"_rels/.rels",         data: strToBytes(pkgRels) },
+    { name:"xl/workbook.xml",     data: strToBytes(workbook) },
+    { name:"xl/_rels/workbook.xml.rels", data: strToBytes(rels) },
+    ...sheets.map((s,i)=>({ name:`xl/worksheets/sheet${i+1}.xml`, data: strToBytes(buildSheet(s.rows)) }))
+  ];
+
+  const zip = makeZip(files);
+  const blob = new Blob([zip], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `FamFinance_${date}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// CONFIG (Budget + Categories)
+// ============================================================
+function Config({budget, setBudget, cats, setCats, sel, setSel, months, entries}){
+  const [section,    setSection]    = useState("budget");
+  const [exporting,  setExporting]  = useState(false);
+  // budget editing
+  const [editTotal,  setEditTotal]  = useState(false);
+  const [tempTotal,  setTempTotal]  = useState(String(budget.total));
+  const [editCatId,  setEditCatId]  = useState(null);
+  const [tempCatVal, setTempCatVal] = useState("");
+  // category editing
+  const [showNewCat, setShowNewCat] = useState(false);
+  const [editCat,    setEditCat]    = useState(null);
+  const [catName,    setCatName]    = useState("");
+  const [catIcon,    setCatIcon]    = useState("📦");
+  const [catColor,   setCatColor]   = useState("#6366f1");
+
+  const mEntries = sel==="all" ? entries : monthOf(entries, sel);
+  const gastos   = mEntries.filter(e=>e.type==="gasto");
+
+  const saveTotal = () => {
+    const n = parseFloat(tempTotal);
+    if(n > 0){ setBudget(b=>({...b, total:n})); setEditTotal(false); }
+  };
+  const saveCatBudget = (id) => {
+    const n = parseFloat(tempCatVal);
+    if(n >= 0){ setBudget(b=>({...b, categories:{...b.categories,[id]:n}})); setEditCatId(null); }
+  };
+  const handleExport = () => {
+    setExporting(true);
+    setTimeout(()=>{
+      try { exportToExcel(entries, budget, cats); } catch(e) { alert("Error: "+e.message); }
+      setExporting(false);
+    }, 100);
+  };
+
+  const PRESET_ICONS  = ["🏠","💡","🛒","🍽️","🚗","⛽","🏥","📚","🛍️","🎬","✈️","🐾","🇨🇴","💰","📦","🎯","💊","🏋️","🎁","🍺","☕","🎵","🏖️","🚌","🏦","📱","🐕","👶","🌿","🍕"];
+  const PRESET_COLORS = ["#3b82f6","#f59e0b","#10b981","#ef4444","#8b5cf6","#f97316","#06b6d4","#6366f1","#ec4899","#14b8a6","#0ea5e9","#a78bfa","#facc15","#22c55e","#94a3b8","#e11d48"];
+
+  const openNewCat  = () => { setCatName(""); setCatIcon("📦"); setCatColor("#6366f1"); setEditCat(null); setShowNewCat(true); };
+  const openEditCat = (c) => { setCatName(c.name); setCatIcon(c.icon); setCatColor(c.color); setEditCat(c); setShowNewCat(true); };
+  const saveCat = () => {
+    if(!catName.trim()) return;
+    if(editCat){
+      setCats(cs=>cs.map(c=>c.id===editCat.id?{...c,name:catName,icon:catIcon,color:catColor}:c));
+    } else {
+      setCats(cs=>[...cs,{id:`c${Date.now()}`,name:catName,icon:catIcon,color:catColor,custom:true}]);
+    }
+    setShowNewCat(false);
+  };
+  const deleteCat = (id) => setCats(cs=>cs.filter(c=>c.id!==id));
+
+  return (
+    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1641}}
+      , React.createElement(MonthBar, { months: months, sel: sel, onChange: setSel, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1642}})
+
+      /* SECTION TOGGLE */
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",background:"var(--bg3)",borderRadius:"var(--rs)",padding:3,gap:3,marginBottom:16}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1645}}
+        , [["budget","🎯 Presupuesto"],["cats","🏷️ Categorías"]].map(([k,l])=>(
+          React.createElement('button', { key: k, onClick: ()=>setSection(k), style: {
+            padding:"10px",border:"none",borderRadius:8,fontFamily:"inherit",
+            fontSize:13,fontWeight:700,cursor:"pointer",transition:"all .2s",
+            background:section===k?"var(--bg2)":"transparent",
+            color:section===k?"var(--tx)":"var(--mt)"
+          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1647}}, l)
+        ))
+      )
+
+      /* EXPORT BUTTON */
+      , React.createElement('button', { onClick: handleExport, disabled: exporting, style: {
+        width:"100%",padding:"13px",border:"1px solid rgba(34,197,94,.3)",borderRadius:"var(--rs)",
+        background:"rgba(34,197,94,.08)",color:"var(--gn)",fontFamily:"inherit",
+        fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:16,
+        display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+        opacity:exporting?0.6:1
+      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1657}}
+        , exporting?"⏳ Generando...":"📥 Exportar a Excel (.xlsx)"
+      )
+
+      /* ── BUDGET SECTION ── */
+      , section==="budget" && (
+        React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1669}}
+          /* TOTAL */
+          , React.createElement('div', { className: "card", style: {marginBottom:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1671}}
+            , React.createElement('div', { style: {fontSize:12,color:"var(--mt)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1672}}, "Presupuesto Total Mensual"  )
+            , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1673}}
+              , React.createElement('div', { style: {flex:1}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1674}}
+                , editTotal ? (
+                  React.createElement('input', {
+                    className: "fi", type: "number", value: tempTotal, inputMode: "decimal",
+                    onChange: e=>setTempTotal(e.target.value),
+                    style: {fontSize:22,fontWeight:800},
+                    autoFocus: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1676}}
+                  )
+                ) : (
+                  React.createElement('div', { style: {fontFamily:"Sora",fontSize:28,fontWeight:800,color:"var(--ac)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1683}}, fmt(budget.total))
+                )
+              )
+              , editTotal ? (
+                React.createElement('div', { style: {display:"flex",gap:6}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1687}}
+                  , React.createElement('button', { className: "btn btns" , style: {width:"auto",padding:"10px 16px"}, onClick: saveTotal, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1688}}, "✓")
+                  , React.createElement('button', { className: "btn btng" , style: {width:"auto",padding:"10px 14px"}, onClick: ()=>{setEditTotal(false);setTempTotal(String(budget.total));}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1689}}, "✕")
+                )
+              ) : (
+                React.createElement('button', { className: "btn btng" , style: {width:"auto",padding:"10px 18px",fontSize:13}, onClick: ()=>{setTempTotal(String(budget.total));setEditTotal(true);}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1692}}, "Editar")
+              )
+            )
+          )
+
+          /* PER CATEGORY */
+          , React.createElement('div', { style: {fontSize:12,color:"var(--mt)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1698}}, "Por Categoría"
+
+            , React.createElement('span', { style: {fontSize:11,color:"var(--mt)",fontWeight:400,marginLeft:6,textTransform:"none"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1700}}, "· toca el monto para editar"
+
+            )
+          )
+          , cats.map(c=>{
+            const spent = gastos.filter(e=>e.category_id===c.id).reduce((s,e)=>s+e.amount,0);
+            const bud   = budget.categories[c.id]||0;
+            const pct   = bud>0?(spent/bud)*100:0;
+            const isEditing = editCatId===c.id;
+            return (
+              React.createElement('div', { key: c.id, className: "card", style: {marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1710}}
+                , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1711}}
+                  , React.createElement('div', { style: {width:36,height:36,borderRadius:10,background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1712}}, c.icon)
+                  , React.createElement('div', { style: {flex:1,minWidth:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1713}}
+                    , React.createElement('div', { style: {fontSize:13,fontWeight:700}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1714}}, c.name)
+                    , React.createElement('div', { style: {fontSize:11,color:"var(--mt)",marginTop:1}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1715}}, "Gastado: "
+                       , React.createElement('span', { style: {color:pct>=100?"var(--rd)":pct>=80?"var(--yw)":"var(--mt2)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1716}}, fmt(spent))
+                      , bud>0&&React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1717}}, " de "  , fmt(bud))
+                    )
+                  )
+                  , isEditing ? (
+                    React.createElement('div', { style: {display:"flex",gap:5,flexShrink:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1721}}
+                      , React.createElement('input', {
+                        className: "fi", type: "number", value: tempCatVal, inputMode: "decimal",
+                        onChange: e=>setTempCatVal(e.target.value),
+                        style: {width:90,padding:"6px 8px",fontSize:14,fontWeight:700},
+                        autoFocus: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1722}}
+                      )
+                      , React.createElement('button', { className: "btn btns" , style: {width:"auto",padding:"6px 10px",fontSize:12}, onClick: ()=>saveCatBudget(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1728}}, "✓")
+                      , React.createElement('button', { className: "btn btng" , style: {width:"auto",padding:"6px 10px",fontSize:12}, onClick: ()=>setEditCatId(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1729}}, "✕")
+                    )
+                  ) : (
+                    React.createElement('button', { onClick: ()=>{setEditCatId(c.id);setTempCatVal(String(bud||""));},
+                      style: {background:bud>0?"rgba(79,124,255,.1)":"var(--bg3)",border:bud>0?"1px solid var(--ac)":"1px solid var(--bd)",
+                        borderRadius:9,padding:"6px 12px",color:bud>0?"var(--ac)":"var(--mt)",
+                        fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",flexShrink:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1732}}
+                      , bud>0?fmt(bud):"+ Budget"
+                    )
+                  )
+                )
+                , bud>0&&(
+                  React.createElement('div', { style: {marginTop:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1741}}
+                    , React.createElement(Prog, { pct: pct, color: c.color, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1742}})
+                    , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginTop:3,fontSize:10,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1743}}
+                      , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1744}}, pct.toFixed(0), "% usado" )
+                      , React.createElement('span', { style: {color:bud>=spent?"var(--gn)":"var(--rd)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1745}}
+                        , bud>=spent?`${fmt(bud-spent)} disponible`:`${fmt(spent-bud)} excedido`
+                      )
+                    )
+                  )
+                )
+              )
+            );
+          })
+        )
+      )
+
+      /* ── CATEGORIES SECTION ── */
+      , section==="cats" && (
+        React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1759}}
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1760}}
+            , React.createElement('div', { style: {fontSize:13,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1761}}, cats.length, " categorías" )
+            , React.createElement('button', { onClick: openNewCat, style: {background:"var(--ag)",border:"none",borderRadius:10,
+              padding:"9px 16px",color:"#fff",fontSize:13,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1762}}, "+ Nueva"
+
+            )
+          )
+
+          , cats.map(c=>{
+            const usedIn = entries.filter(e=>e.category_id===c.id).length;
+            return (
+              React.createElement('div', { key: c.id, className: "er", style: {cursor:"default"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1771}}
+                , React.createElement('div', { style: {width:38,height:38,borderRadius:11,background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1772}}, c.icon)
+                , React.createElement('div', { className: "en", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1773}}
+                  , React.createElement('div', { className: "enm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1774}}, c.name)
+                  , React.createElement('div', { className: "emt", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1775}}, usedIn, " movimiento" , usedIn!==1?"s":"", " · "  , c.custom?"Personalizada":"Predefinida")
+                )
+                , React.createElement('div', { style: {display:"flex",gap:6,flexShrink:0}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1777}}
+                  , React.createElement('button', { onClick: ()=>openEditCat(c), style: {background:"var(--bg3)",border:"1px solid var(--bd)",borderRadius:8,padding:"6px 10px",color:"var(--ac)",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1778}}, "✏️")
+                  , c.custom&&(
+                    React.createElement('button', { onClick: ()=>deleteCat(c.id), style: {background:"rgba(244,63,94,.1)",border:"1px solid rgba(244,63,94,.25)",borderRadius:8,padding:"6px 10px",color:"var(--rd)",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1780}}, "🗑️")
+                  )
+                )
+              )
+            );
+          })
+        )
+      )
+
+      /* NEW / EDIT CATEGORY SHEET */
+      , showNewCat&&(
+        React.createElement('div', { className: "ovl", onClick: e=>e.target===e.currentTarget&&setShowNewCat(false), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1791}}
+          , React.createElement('div', { className: "sht", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1792}}
+            , React.createElement('div', { className: "hdl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1793}})
+            , React.createElement('div', { className: "sttl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1794}}, editCat?"Editar":"Nueva", " Categoría" )
+
+            , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1796}}
+              , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1797}}, "Nombre")
+              , React.createElement('input', { className: "fi", type: "text", placeholder: "Ej: Gym, Mascota..."  , value: catName, onChange: e=>setCatName(e.target.value), autoFocus: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1798}})
+            )
+
+            , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1801}}
+              , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1802}}, "Ícono")
+              , React.createElement('div', { style: {display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1803}}
+                , PRESET_ICONS.map(ic=>(
+                  React.createElement('button', { key: ic, onClick: ()=>setCatIcon(ic), style: {
+                    width:40,height:40,border:catIcon===ic?"2px solid var(--ac)":"1px solid var(--bd)",
+                    borderRadius:10,background:catIcon===ic?"rgba(79,124,255,.12)":"var(--bg3)",
+                    fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"
+                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1805}}, ic)
+                ))
+              )
+              , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1812}}
+                , React.createElement('span', { style: {fontSize:12,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1813}}, "O escribe uno:"  )
+                , React.createElement('input', { className: "fi", type: "text", value: catIcon, onChange: e=>setCatIcon(e.target.value), style: {width:60,textAlign:"center",fontSize:20,padding:"8px"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1814}})
+              )
+            )
+
+            , React.createElement('div', { className: "fg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1818}}
+              , React.createElement('label', { className: "fl", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1819}}, "Color")
+              , React.createElement('div', { style: {display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1820}}
+                , PRESET_COLORS.map(col=>(
+                  React.createElement('button', { key: col, onClick: ()=>setCatColor(col), style: {
+                    width:36,height:36,borderRadius:10,background:col,cursor:"pointer",
+                    border:catColor===col?"3px solid white":"2px solid transparent",
+                    boxShadow:catColor===col?"0 0 0 2px "+col:"none"
+                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1822}})
+                ))
+              )
+              , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1829}}
+                , React.createElement('span', { style: {fontSize:12,color:"var(--mt)"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1830}}, "Personalizado:")
+                , React.createElement('input', { type: "color", value: catColor, onChange: e=>setCatColor(e.target.value),
+                  style: {width:44,height:36,background:"var(--bg3)",border:"1px solid var(--bd)",borderRadius:9,cursor:"pointer",padding:2}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1831}})
+                , React.createElement('div', { style: {width:36,height:36,borderRadius:10,background:catColor,border:"1px solid var(--bd)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1833}}, catIcon)
+              )
+            )
+
+            , React.createElement('button', { className: "btn btnp" , onClick: saveCat, style: {marginBottom:8}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1837}}
+              , editCat?"Guardar Cambios":"Crear Categoría"
+            )
+            , React.createElement('button', { className: "btn btng" , onClick: ()=>setShowNewCat(false), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1840}}, "Cancelar")
+          )
+        )
+      )
+    )
+  );
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function App(){
+  useEffect(injectStyles,[]);
+
+  const [tab,   setTab]  = useState("dashboard");
+  const [showAdd,setAdd] = useState(false);
+  const [editE,  setEdit]= useState(null);
+  const [showS,  setShowS]=useState(false);
+  const [toast,  setToast]=useState(null);
+  const [selP,   setSelP] = useState(null);
+
+  const [entries,setEntries] = useStorage("ff4_entries",    SEED_ENTRIES);
+  const [budget, setBudget]  = useStorage("ff4_budget",     SEED_BUDGET);
+  const [cats,   setCats]    = useStorage("ff4_cats",       CATEGORIES);
+  const [setts,  setSetts]   = useStorage("ff4_setts",      SEED_SETTLEMENTS);
+  const [cfg,    setCfg]     = useStorage("ff4_cfg",        SEED_CFG);
+
+  const months = useMemo(()=>allMonths(entries),[entries]);
+  const [sel,setSel] = useState(()=>allMonths(SEED_ENTRIES)[0]||"all");
+
+  const t$ = msg=>setToast(msg);
+
+  const handleSave   = useCallback((e,delId)=>{
+    if(delId){ setEntries(es=>es.filter(x=>x.id!==delId)); t$("🗑️ Eliminado"); return; }
+    setEntries(es=>[e,...es.filter(x=>x.id!==e.id)]); t$("✓ Guardado");
+  },[]);
+  const handleDel    = useCallback(id=>{ setEntries(es=>es.filter(e=>e.id!==id)); t$("🗑️ Eliminado"); },[]);
+  const handleSettle = useCallback(s=>{ setSetts(ss=>[...ss,s]); t$("✓ Periodo liquidado"); },[]);
+  const handleRemSett= useCallback(i=>{ setSetts(ss=>ss.filter((_,j)=>j!==i)); },[]);
+
+  const period     = useMemo(()=>getCurrentPeriod(cfg.anchorDate,cfg.intervalDays),[cfg]);
+  const activePeriod = selP||period;
+  const totalNet   = useMemo(()=>{
+    const sv=entries.filter(e=>e.type==="ahorro").reduce((s,e)=>s+e.amount,0);
+    const rt=entries.filter(e=>e.type==="retiro").reduce((s,e)=>s+e.amount,0);
+    return sv-rt;
+  },[entries]);
+
+  // 3 tabs left + add button + 3 tabs right
+  const LEFT  = [{id:"dashboard",icon:"📊",label:"Inicio"},{id:"trends",icon:"📈",label:"Trends"},{id:"liquidar",icon:"⚖️",label:"Liquidar"}];
+  const RIGHT = [{id:"ahorros",icon:"💰",label:"Ahorros"},{id:"historial",icon:"📋",label:"Historial"},{id:"config",icon:"⚙️",label:"Config"}];
+  const TITLES = {
+    dashboard:{t:"FamFinance",  s:new Date().toLocaleDateString("es-CO",{month:"long",year:"numeric"})},
+    trends:   {t:"Tendencias",  s:"análisis mensual"},
+    liquidar: {t:"Liquidar",    s:period.label},
+    ahorros:  {t:"Ahorros",     s:`Saldo: ${fmt(totalNet)}`},
+    historial:{t:"Historial",   s:`${entries.filter(e=>e.type!=="retiro").length} movimientos`},
+    config:   {t:"Configuración",s:"Presupuesto y categorías"},
+  };
+
+  const sp = {sel,setSel,months};
+
+  return (
+    React.createElement('div', { className: "app", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1903}}
+      , React.createElement('div', { className: "hdr", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1904}}
+        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1905}}
+          , React.createElement('div', { className: "hdr-t", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1906}}, TITLES[tab].t)
+          , React.createElement('div', { className: "hdr-s", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1907}}, TITLES[tab].s)
+        )
+        , React.createElement('div', { style: {width:38,height:38,background:"var(--ag)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1909}}, "💎")
+      )
+
+      , React.createElement('div', { className: "body", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1912}}
+        , tab==="dashboard"&&React.createElement(Dashboard, { entries: entries, budget: budget, cats: cats, settlements: setts, cfg: cfg,
+          onOpenSettle: ()=>{setSelP(period);setShowS(true);}, ...sp, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1913}})
+        , tab==="trends"   &&React.createElement(Trends, {    entries: entries, cats: cats, budget: budget, ...sp, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1915}})
+        , tab==="liquidar" &&React.createElement(Liquidaciones, { entries: entries, settlements: setts, cfg: cfg, setCfg: setCfg,
+          onOpenSettle: p=>{setSelP(p);setShowS(true);}, onRemoveSett: handleRemSett, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1916}})
+        , tab==="ahorros"  &&React.createElement(Savings, {   entries: entries, cats: cats, onSaveEntry: handleSave, ...sp, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1918}})
+        , tab==="historial"&&React.createElement(History, {   entries: entries, cats: cats, onEdit: setEdit, onDelete: handleDel, ...sp, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1919}})
+        , tab==="config"   &&React.createElement(Config, {    entries: entries, budget: budget, setBudget: setBudget, cats: cats, setCats: setCats, ...sp, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1920}})
+      )
+
+      /* NAV — 3 left + add + 3 right */
+      , React.createElement('div', { className: "nav", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1924}}
+        , LEFT.map(t=>(
+          React.createElement('div', { key: t.id, className: `ni${tab===t.id?" on":""}`, onClick: ()=>setTab(t.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1926}}
+            , React.createElement('span', { className: "ni-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1927}}, t.icon), React.createElement('span', { className: "ni-lb", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1927}}, t.label)
+          )
+        ))
+        , React.createElement('div', { style: {display:"flex",flexDirection:"column",alignItems:"center",flex:"0 0 56px"}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1930}}
+          , React.createElement('div', { className: "nav-add", onClick: ()=>setAdd(true), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1931}}, "＋")
+        )
+        , RIGHT.map(t=>(
+          React.createElement('div', { key: t.id, className: `ni${tab===t.id?" on":""}`, onClick: ()=>setTab(t.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1934}}
+            , React.createElement('span', { className: "ni-ic", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1935}}, t.icon), React.createElement('span', { className: "ni-lb", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1935}}, t.label)
+          )
+        ))
+      )
+
+      , showAdd &&React.createElement(EntrySheet, { onClose: ()=>setAdd(false), onSave: handleSave, cats: cats, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1940}})
+      , editE   &&React.createElement(EntrySheet, { entry: editE, onClose: ()=>setEdit(null), onSave: handleSave, cats: cats, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1941}})
+      , showS   &&React.createElement(SettleSheet, { entries: entries, period: activePeriod, onClose: ()=>{setShowS(false);setSelP(null);}, onSettle: handleSettle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1942}})
+      , toast   &&React.createElement(Toast, { msg: toast, onDone: ()=>setToast(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1943}})
+    )
+  );
+}
+
+try{const root=ReactDOM.createRoot(document.getElementById('root'));root.render(React.createElement(App));const s=document.getElementById('splash');if(s){s.style.opacity='0';setTimeout(()=>s.remove(),400);}}catch(e){const s=document.getElementById('splash');if(s)s.innerHTML='<div style="color:#f43f5e;padding:24px;font-family:sans-serif"><h2>Error</h2><pre style="font-size:11px;white-space:pre-wrap">'+e.stack+'</pre></div>';}</script></body></html>
