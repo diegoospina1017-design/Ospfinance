@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 
 type PersonType = 'Diego' | 'Kelly' | 'Compartido'
 
@@ -11,11 +12,12 @@ type Category = {
 }
 
 type ExpenseItem = {
-  id: number
+  id: string
   person: PersonType
   amount: number
   catId: string
   note: string
+  created_at?: string
 }
 
 const categories: Category[] = [
@@ -26,14 +28,45 @@ const categories: Category[] = [
   { id: 'other', name: 'Otros', icon: '📦' },
 ]
 
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
 export default function Home() {
   const [person, setPerson] = useState<PersonType>('Diego')
   const [amount, setAmount] = useState('')
   const [catId, setCatId] = useState('food')
   const [note, setNote] = useState('')
   const [items, setItems] = useState<ExpenseItem[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const handleSave = () => {
+  useEffect(() => {
+    loadItems()
+  }, [])
+
+  const loadItems = async () => {
+    setLoading(true)
+
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error loading expenses:', error)
+      setLoading(false)
+      return
+    }
+
+    if (data) {
+      setItems(data as ExpenseItem[])
+    }
+
+    setLoading(false)
+  }
+
+  const handleSave = async () => {
     const parsedAmount = Number(amount)
 
     if (!parsedAmount || parsedAmount <= 0) {
@@ -41,19 +74,27 @@ export default function Home() {
       return
     }
 
-    const newItem: ExpenseItem = {
-      id: Date.now(),
+    const newItem = {
       person,
       amount: parsedAmount,
       catId,
       note,
     }
 
-    setItems((prev) => [newItem, ...prev])
+    const { error } = await supabase.from('expenses').insert([newItem])
+
+    if (error) {
+      console.error('Error saving expense:', error)
+      alert('Error guardando en Supabase')
+      return
+    }
+
     setAmount('')
     setNote('')
     setCatId('food')
     setPerson('Diego')
+
+    await loadItems()
   }
 
   const getCategoryName = (id: string) => {
@@ -64,11 +105,12 @@ export default function Home() {
     return categories.find((c) => c.id === id)?.icon || '📦'
   }
 
-  const total = items.reduce((sum, item) => sum + item.amount, 0)
+  const total = items.reduce((sum, item) => sum + Number(item.amount), 0)
 
   return (
-    <div style={{ padding: 20, maxWidth: 700, margin: '0 auto' }}>
+    <div style={{ padding: 20, maxWidth: 700, margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
       <h1>FamFinance 🚀</h1>
+      <p>Diego & Kelly App</p>
 
       <h3>Persona</h3>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -152,7 +194,9 @@ export default function Home() {
       <div style={{ marginTop: 30 }}>
         <h3>Movimientos</h3>
 
-        {items.length === 0 ? (
+        {loading ? (
+          <p>Cargando...</p>
+        ) : items.length === 0 ? (
           <p>No hay movimientos todavía.</p>
         ) : (
           <div style={{ display: 'grid', gap: 12 }}>
@@ -164,14 +208,28 @@ export default function Home() {
                   border: '1px solid #333',
                   borderRadius: 10,
                   background: '#111',
+                  color: 'white',
                 }}
               >
-                <p><strong>Persona:</strong> {item.person}</p>
-                <p><strong>Monto:</strong> ${item.amount.toLocaleString()}</p>
                 <p>
-                  <strong>Categoría:</strong> {getCategoryIcon(item.catId)} {getCategoryName(item.catId)}
+                  <strong>Persona:</strong> {item.person}
                 </p>
-                <p><strong>Nota:</strong> {item.note || '-'}</p>
+                <p>
+                  <strong>Monto:</strong> ${Number(item.amount).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Categoría:</strong> {getCategoryIcon(item.catId)}{' '}
+                  {getCategoryName(item.catId)}
+                </p>
+                <p>
+                  <strong>Nota:</strong> {item.note || '-'}
+                </p>
+                {item.created_at && (
+                  <p>
+                    <strong>Fecha:</strong>{' '}
+                    {new Date(item.created_at).toLocaleString()}
+                  </p>
+                )}
               </div>
             ))}
           </div>
