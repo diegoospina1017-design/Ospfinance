@@ -10,6 +10,14 @@ type Category = {
   icon: string
 }
 
+type ExpenseItem = {
+  id: number
+  person: PersonType
+  amount: number
+  catId: string
+  note: string
+}
+
 const categories: Category[] = [
   { id: 'food', name: 'Comida', icon: '🍔' },
   { id: 'transport', name: 'Transporte', icon: '🚗' },
@@ -23,9 +31,43 @@ export default function Home() {
   const [amount, setAmount] = useState('')
   const [catId, setCatId] = useState('food')
   const [note, setNote] = useState('')
+  const [items, setItems] = useState<ExpenseItem[]>([])
+
+  const handleSave = () => {
+    const parsedAmount = Number(amount)
+
+    if (!parsedAmount || parsedAmount <= 0) {
+      alert('Ingresa un monto válido')
+      return
+    }
+
+    const newItem: ExpenseItem = {
+      id: Date.now(),
+      person,
+      amount: parsedAmount,
+      catId,
+      note,
+    }
+
+    setItems((prev) => [newItem, ...prev])
+    setAmount('')
+    setNote('')
+    setCatId('food')
+    setPerson('Diego')
+  }
+
+  const getCategoryName = (id: string) => {
+    return categories.find((c) => c.id === id)?.name || 'Sin categoría'
+  }
+
+  const getCategoryIcon = (id: string) => {
+    return categories.find((c) => c.id === id)?.icon || '📦'
+  }
+
+  const total = items.reduce((sum, item) => sum + item.amount, 0)
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, maxWidth: 700, margin: '0 auto' }}>
       <h1>FamFinance 🚀</h1>
 
       <h3>Persona</h3>
@@ -86,15 +128,54 @@ export default function Home() {
         style={{ padding: 8, width: 300 }}
       />
 
+      <div style={{ marginTop: 20 }}>
+        <button
+          onClick={handleSave}
+          style={{
+            padding: '10px 16px',
+            background: '#16a34a',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+        >
+          Guardar gasto
+        </button>
+      </div>
+
       <div style={{ marginTop: 30 }}>
-        <strong>Resumen:</strong>
-        <p>Persona: {person}</p>
-        <p>Monto: {amount || '0'}</p>
-        <p>
-          Categoría:{' '}
-          {categories.find((c) => c.id === catId)?.name}
-        </p>
-        <p>Nota: {note || '-'}</p>
+        <strong>Total acumulado:</strong> ${total.toLocaleString()}
+      </div>
+
+      <div style={{ marginTop: 30 }}>
+        <h3>Movimientos</h3>
+
+        {items.length === 0 ? (
+          <p>No hay movimientos todavía.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: 12 }}>
+            {items.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  padding: 14,
+                  border: '1px solid #333',
+                  borderRadius: 10,
+                  background: '#111',
+                }}
+              >
+                <p><strong>Persona:</strong> {item.person}</p>
+                <p><strong>Monto:</strong> ${item.amount.toLocaleString()}</p>
+                <p>
+                  <strong>Categoría:</strong> {getCategoryIcon(item.catId)} {getCategoryName(item.catId)}
+                </p>
+                <p><strong>Nota:</strong> {item.note || '-'}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
